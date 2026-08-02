@@ -56,11 +56,13 @@ const ProfilePage = () => {
   // Learner Fields
   const [education, setEducation] = useState('');
   const [careerGoal, setCareerGoal] = useState('');
+  const [skillsText, setSkillsText] = useState('');
 
   // Mentor Fields
-  const [experience, setExperience] = useState(0);
-  const [hourlyFee, setHourlyFee] = useState(0);
+  const [experience, setExperience] = useState(1);
+  const [hourlyFee, setHourlyFee] = useState(50);
   const [availability, setAvailability] = useState('');
+  const [expertiseText, setExpertiseText] = useState('');
 
   // Image Upload Dialog States
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
@@ -87,63 +89,106 @@ const ProfilePage = () => {
       if (user.role === 'learner') {
         setEducation(profile.education || '');
         setCareerGoal(profile.careerGoal || '');
+        if (Array.isArray(profile.skills)) {
+          setSkillsText(profile.skills.map((s) => (typeof s === 'string' ? s : s.name)).filter(Boolean).join(', '));
+        } else {
+          setSkillsText('');
+        }
       } else {
         setExperience(profile.experience || 1);
         setHourlyFee(profile.sessionPrice || profile.hourlyFee || 50);
         setAvailability(
           Array.isArray(profile.availability) ? profile.availability.join(', ') : profile.availability || ''
         );
+        if (Array.isArray(profile.expertise)) {
+          setExpertiseText(profile.expertise.map((e) => (typeof e === 'string' ? e : e.name)).filter(Boolean).join(', '));
+        } else {
+          setExpertiseText('');
+        }
       }
     }
   }, [user, profile]);
 
-  // Image File Validation & Selection Handler
-  const handleFileSelect = (event, type) => {
+  // Helper Canvas Image Downscaling & Compression (Guarantees < 100KB Base64 payload!)
+  const compressImage = (file, maxWidth, maxHeight, quality = 0.8) => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+
+          if (width > maxWidth) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          }
+          if (height > maxHeight) {
+            width = Math.round((width * maxHeight) / height);
+            height = maxHeight;
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+
+          // Compress as JPEG
+          const dataUrl = canvas.toDataURL('image/jpeg', quality);
+          resolve(dataUrl);
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  // Image File Selection Handler with Automatic Resizing & Compression
+  const handleFileSelect = async (event, type) => {
     const file = event.target.files[0];
     if (!file) return;
 
-    // Validate Image Type
+    // Validate format
     const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
     if (!validTypes.includes(file.type)) {
-      toast.error('Invalid image format. Please select JPG, JPEG, PNG, or WEBP.');
-      return;
-    }
-
-    // Validate Maximum File Size (5 MB)
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('Image size exceeds 5 MB. Please select a smaller file.');
+      toast.error('Please select a valid image file (JPG, PNG, or WEBP).');
       return;
     }
 
     setUploadType(type);
 
-    // FileReader for instant local preview
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setPreviewUrl(reader.result);
+    try {
+      // Compress and resize: Avatar 350x350, Cover 1200x400
+      const maxWidth = type === 'avatar' ? 350 : 1200;
+      const maxHeight = type === 'avatar' ? 350 : 450;
+      const compressedDataUrl = await compressImage(file, maxWidth, maxHeight, 0.8);
+
+      setPreviewUrl(compressedDataUrl);
       setUploadDialogOpen(true);
-    };
-    reader.readAsDataURL(file);
+    } catch (err) {
+      toast.error('Failed to process image file.');
+    }
   };
 
-  // Confirm File Upload
+  // Confirm File Upload & Save into State
   const handleConfirmUpload = () => {
-    setUploadProgress(40);
+    setUploadProgress(50);
     setTimeout(() => {
       setUploadProgress(100);
       setTimeout(() => {
         if (uploadType === 'avatar') {
           setProfilePicture(previewUrl);
-          toast.success('Profile photo updated cleanly!');
+          toast.success('Profile photo selected! Click "Save Profile" to update.');
         } else {
           setCoverPicture(previewUrl);
-          toast.success('Cover image updated cleanly!');
+          toast.success('Cover photo selected! Click "Save Profile" to update.');
         }
         setUploadDialogOpen(false);
         setPreviewUrl('');
         setUploadProgress(0);
-      }, 300);
-    }, 400);
+      }, 250);
+    }, 250);
   };
 
   // Save Profile Changes to Backend & MongoDB
@@ -153,33 +198,40 @@ const ProfilePage = () => {
 
     try {
       const payload = {
-        name,
-        bio,
+        name: name.trim(),
+        bio: bio.trim(),
         profileImage: profilePicture,
         profilePicture,
         coverPicture,
         socialLinks: {
-          github,
-          linkedin,
-          portfolio,
+          github: github.trim(),
+          linkedin: linkedin.trim(),
+          portfolio: portfolio.trim(),
         },
       };
 
       if (user?.role === 'learner') {
-        payload.education = education;
-        payload.careerGoal = careerGoal;
+        payload.education = education.trim();
+        payload.careerGoal = careerGoal.trim();
+        payload.skills = skillsText
+          ? skillsText.split(',').map((s) => s.trim()).filter(Boolean)
+          : profile?.skills || [];
       } else {
-        payload.experience = experience;
-        payload.sessionPrice = hourlyFee;
-        payload.hourlyFee = hourlyFee;
+        payload.experience = Number(experience) || 1;
+        payload.sessionPrice = Number(hourlyFee) || 50;
+        payload.hourlyFee = Number(hourlyFee) || 50;
         payload.availability = availability;
+        payload.expertise = expertiseText
+          ? expertiseText.split(',').map((e) => e.trim()).filter(Boolean)
+          : profile?.expertise || [];
       }
 
       await updateProfile(payload);
       setIsEditing(false);
-      toast.success('Profile updated successfully!');
+      toast.success('Profile updated successfully in MongoDB!');
     } catch (err) {
-      toast.error('Failed to update profile.');
+      const errMsg = err?.response?.data?.message || err?.message || 'Failed to update profile.';
+      toast.error(errMsg);
     } finally {
       setLoading(false);
     }
@@ -200,7 +252,7 @@ const ProfilePage = () => {
 
   // Calculate Profile Completion Score
   const getCompletionScore = () => {
-    let score = 30; // base score for account
+    let score = 30;
     if (bio) score += 20;
     if (profilePicture) score += 20;
     if (github || linkedin || portfolio) score += 15;
@@ -213,9 +265,9 @@ const ProfilePage = () => {
   return (
     <DashboardLayout>
       <Container maxWidth="lg">
-        {/* Main Card */}
+        {/* Main Profile Card */}
         <Paper elevation={3} sx={{ borderRadius: 4, overflow: 'hidden', bgcolor: '#ffffff', mb: 4 }}>
-          {/* Cover Photo Banner with Overlay Upload Button */}
+          {/* Cover Photo Banner */}
           <Box
             sx={{
               height: 220,
@@ -229,7 +281,7 @@ const ProfilePage = () => {
               sx={{
                 position: 'absolute',
                 inset: 0,
-                background: 'linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.6) 100%)',
+                background: 'linear-gradient(180deg, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.65) 100%)',
               }}
             />
 
@@ -241,15 +293,15 @@ const ProfilePage = () => {
                 startIcon={<PhotoCameraIcon />}
                 size="small"
                 sx={{
-                  bgcolor: 'rgba(15, 23, 42, 0.75)',
+                  bgcolor: 'rgba(15, 23, 42, 0.8)',
                   color: '#ffffff',
                   backdropFilter: 'blur(8px)',
                   borderRadius: 6,
                   fontWeight: 700,
-                  '&:hover': { bgcolor: 'rgba(15, 23, 42, 0.9)' },
+                  '&:hover': { bgcolor: 'rgba(15, 23, 42, 0.95)' },
                 }}
               >
-                Change Cover Image
+                Change Cover Photo
                 <input
                   type="file"
                   hidden
@@ -260,11 +312,11 @@ const ProfilePage = () => {
             </Box>
           </Box>
 
-          {/* Profile Header & Interlocking Avatar */}
+          {/* Profile Header & Avatar */}
           <Box sx={{ px: { xs: 3, sm: 5 }, pb: 4, position: 'relative' }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', mb: 3, mt: -7 }}>
               <Stack direction="row" spacing={3} alignItems="flex-end">
-                {/* Circular Avatar with Hover Camera Overlay (NO TEXT URL) */}
+                {/* Circular Avatar with Camera Icon Overlay */}
                 <Box sx={{ position: 'relative', display: 'inline-block' }}>
                   <Avatar
                     src={profilePicture || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name}`}
@@ -273,10 +325,10 @@ const ProfilePage = () => {
                       width: 120,
                       height: 120,
                       border: '4px solid #ffffff',
-                      boxShadow: '0 4px 14px rgba(0,0,0,0.18)',
+                      boxShadow: '0 4px 14px rgba(0,0,0,0.2)',
                     }}
                   />
-                  <Tooltip title="Upload Profile Picture">
+                  <Tooltip title="Change Profile Picture">
                     <IconButton
                       component="label"
                       sx={{
@@ -285,7 +337,7 @@ const ProfilePage = () => {
                         right: 4,
                         bgcolor: '#0a66c2',
                         color: '#ffffff',
-                        boxShadow: '0 2px 6px rgba(0,0,0,0.25)',
+                        boxShadow: '0 2px 6px rgba(0,0,0,0.3)',
                         '&:hover': { bgcolor: '#004182' },
                       }}
                     >
@@ -372,175 +424,200 @@ const ProfilePage = () => {
 
             <Divider sx={{ mb: 4 }} />
 
-            {/* Profile Form Fields */}
-            <Grid container spacing={3}>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  disabled={!isEditing}
-                  label="Full Name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                />
-              </Grid>
+            {/* Editable Profile Form Fields */}
+            <Box component="form" onSubmit={handleSave}>
+              <Grid container spacing={3}>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    disabled={!isEditing}
+                    label="Full Name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                  />
+                </Grid>
 
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  disabled
-                  label="Role"
-                  value={user?.role === 'mentor' ? 'Mentor' : 'Learner'}
-                />
-              </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    disabled
+                    label="Account Role"
+                    value={user?.role === 'mentor' ? 'Mentor Account' : 'Learner Account'}
+                  />
+                </Grid>
 
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  disabled={!isEditing}
-                  multiline
-                  rows={3}
-                  label="Personal Bio"
-                  placeholder="Tell mentors and learners about your professional background and learning ambitions..."
-                  value={bio}
-                  onChange={(e) => setBio(e.target.value)}
-                />
-              </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    disabled={!isEditing}
+                    multiline
+                    rows={3}
+                    label="Personal Bio"
+                    placeholder="Tell mentors and learners about your professional background..."
+                    value={bio}
+                    onChange={(e) => setBio(e.target.value)}
+                  />
+                </Grid>
 
-              {/* Social Links Editable Card Section */}
-              <Grid item xs={12}>
-                <Typography variant="h6" sx={{ fontWeight: 800, mb: 2, color: '#191919' }}>
-                  Social & Portfolio Links
-                </Typography>
-                <Grid container spacing={2}>
-                  <Grid item xs={12} sm={4}>
-                    <TextField
-                      fullWidth
-                      disabled={!isEditing}
-                      label="GitHub Profile URL"
-                      placeholder="https://github.com/username"
-                      value={github}
-                      onChange={(e) => setGithub(e.target.value)}
-                      InputProps={{
-                        startAdornment: <GitHubIcon sx={{ color: '#5e5e5e', mr: 1 }} />,
-                      }}
-                    />
-                  </Grid>
+                {/* Social Links Section */}
+                <Grid item xs={12}>
+                  <Typography variant="h6" sx={{ fontWeight: 800, mb: 2, color: '#191919' }}>
+                    Social & Portfolio Links
+                  </Typography>
+                  <Grid container spacing={2}>
+                    <Grid item xs={12} sm={4}>
+                      <TextField
+                        fullWidth
+                        disabled={!isEditing}
+                        label="GitHub Profile URL"
+                        placeholder="https://github.com/username"
+                        value={github}
+                        onChange={(e) => setGithub(e.target.value)}
+                        InputProps={{
+                          startAdornment: <GitHubIcon sx={{ color: '#5e5e5e', mr: 1 }} />,
+                        }}
+                      />
+                    </Grid>
 
-                  <Grid item xs={12} sm={4}>
-                    <TextField
-                      fullWidth
-                      disabled={!isEditing}
-                      label="LinkedIn Profile URL"
-                      placeholder="https://linkedin.com/in/username"
-                      value={linkedin}
-                      onChange={(e) => setLinkedin(e.target.value)}
-                      InputProps={{
-                        startAdornment: <LinkedInIcon sx={{ color: '#0a66c2', mr: 1 }} />,
-                      }}
-                    />
-                  </Grid>
+                    <Grid item xs={12} sm={4}>
+                      <TextField
+                        fullWidth
+                        disabled={!isEditing}
+                        label="LinkedIn Profile URL"
+                        placeholder="https://linkedin.com/in/username"
+                        value={linkedin}
+                        onChange={(e) => setLinkedin(e.target.value)}
+                        InputProps={{
+                          startAdornment: <LinkedInIcon sx={{ color: '#0a66c2', mr: 1 }} />,
+                        }}
+                      />
+                    </Grid>
 
-                  <Grid item xs={12} sm={4}>
-                    <TextField
-                      fullWidth
-                      disabled={!isEditing}
-                      label="Portfolio Website"
-                      placeholder="https://yourwebsite.com"
-                      value={portfolio}
-                      onChange={(e) => setPortfolio(e.target.value)}
-                      InputProps={{
-                        startAdornment: <LanguageIcon sx={{ color: '#14b8a6', mr: 1 }} />,
-                      }}
-                    />
+                    <Grid item xs={12} sm={4}>
+                      <TextField
+                        fullWidth
+                        disabled={!isEditing}
+                        label="Portfolio Website"
+                        placeholder="https://yourwebsite.com"
+                        value={portfolio}
+                        onChange={(e) => setPortfolio(e.target.value)}
+                        InputProps={{
+                          startAdornment: <LanguageIcon sx={{ color: '#14b8a6', mr: 1 }} />,
+                        }}
+                      />
+                    </Grid>
                   </Grid>
                 </Grid>
+
+                {/* Learner Specific Editable Fields */}
+                {user?.role === 'learner' && (
+                  <>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        fullWidth
+                        disabled={!isEditing}
+                        label="Education Background"
+                        value={education}
+                        onChange={(e) => setEducation(e.target.value)}
+                      />
+                    </Grid>
+
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        fullWidth
+                        disabled={!isEditing}
+                        label="Target Career Goal"
+                        value={careerGoal}
+                        onChange={(e) => setCareerGoal(e.target.value)}
+                      />
+                    </Grid>
+
+                    <Grid item xs={12}>
+                      <TextField
+                        fullWidth
+                        disabled={!isEditing}
+                        label="Configured Technical Skills (Comma Separated)"
+                        placeholder="React, Node.js, Python, System Architecture"
+                        value={skillsText}
+                        onChange={(e) => setSkillsText(e.target.value)}
+                        helperText="Separate skills with commas (e.g. React, Node.js, Python)"
+                      />
+                    </Grid>
+
+                    <Grid item xs={12}>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1, color: '#191919' }}>
+                        Active Verified Skills
+                      </Typography>
+                      <Stack direction="row" flexWrap="wrap" gap={1}>
+                        {profile?.skills?.map((s, idx) => (
+                          <Chip
+                            key={idx}
+                            icon={<CheckCircleIcon sx={{ fontSize: '14px !important' }} />}
+                            label={`${typeof s === 'string' ? s : s.name} (${typeof s === 'string' ? 'Intermediate' : s.level || 'Intermediate'})`}
+                            color="primary"
+                            variant="outlined"
+                            sx={{ fontWeight: 700 }}
+                          />
+                        ))}
+                      </Stack>
+                    </Grid>
+                  </>
+                )}
+
+                {/* Mentor Specific Editable Fields */}
+                {user?.role === 'mentor' && (
+                  <>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        fullWidth
+                        disabled={!isEditing}
+                        type="number"
+                        label="Experience (Years)"
+                        value={experience}
+                        onChange={(e) => setExperience(e.target.value)}
+                      />
+                    </Grid>
+
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        fullWidth
+                        disabled={!isEditing}
+                        type="number"
+                        label="Hourly Session Price ($)"
+                        value={hourlyFee}
+                        onChange={(e) => setHourlyFee(e.target.value)}
+                      />
+                    </Grid>
+
+                    <Grid item xs={12}>
+                      <TextField
+                        fullWidth
+                        disabled={!isEditing}
+                        label="Expertise Domains (Comma Separated)"
+                        placeholder="React, System Design, Node.js"
+                        value={expertiseText}
+                        onChange={(e) => setExpertiseText(e.target.value)}
+                      />
+                    </Grid>
+
+                    <Grid item xs={12}>
+                      <TextField
+                        fullWidth
+                        disabled={!isEditing}
+                        label="Availability Schedule"
+                        value={availability}
+                        onChange={(e) => setAvailability(e.target.value)}
+                      />
+                    </Grid>
+                  </>
+                )}
               </Grid>
-
-              {/* Learner Specific Section */}
-              {user?.role === 'learner' && (
-                <>
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      disabled={!isEditing}
-                      label="Education Background"
-                      value={education}
-                      onChange={(e) => setEducation(e.target.value)}
-                    />
-                  </Grid>
-
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      disabled={!isEditing}
-                      label="Target Career Goal"
-                      value={careerGoal}
-                      onChange={(e) => setCareerGoal(e.target.value)}
-                    />
-                  </Grid>
-
-                  <Grid item xs={12}>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1, color: '#191919' }}>
-                      Configured Technical Skills & Verified Levels
-                    </Typography>
-                    <Stack direction="row" flexWrap="wrap" gap={1}>
-                      {profile?.skills?.map((s, idx) => (
-                        <Chip
-                          key={idx}
-                          icon={<CheckCircleIcon sx={{ fontSize: '14px !important' }} />}
-                          label={`${s.name} (${s.level})`}
-                          color="primary"
-                          variant="outlined"
-                          sx={{ fontWeight: 700 }}
-                        />
-                      ))}
-                    </Stack>
-                  </Grid>
-                </>
-              )}
-
-              {/* Mentor Specific Section */}
-              {user?.role === 'mentor' && (
-                <>
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      disabled={!isEditing}
-                      type="number"
-                      label="Experience (Years)"
-                      value={experience}
-                      onChange={(e) => setExperience(e.target.value)}
-                    />
-                  </Grid>
-
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      disabled={!isEditing}
-                      type="number"
-                      label="Hourly Session Price ($)"
-                      value={hourlyFee}
-                      onChange={(e) => setHourlyFee(e.target.value)}
-                    />
-                  </Grid>
-
-                  <Grid item xs={12}>
-                    <TextField
-                      fullWidth
-                      disabled={!isEditing}
-                      label="Availability Schedule"
-                      value={availability}
-                      onChange={(e) => setAvailability(e.target.value)}
-                    />
-                  </Grid>
-                </>
-              )}
-            </Grid>
+            </Box>
           </Box>
         </Paper>
       </Container>
 
-      {/* Professional Image Upload & Preview Dialog */}
+      {/* Image Preview & Upload Dialog */}
       <Dialog
         open={uploadDialogOpen}
         onClose={() => setUploadDialogOpen(false)}
@@ -549,7 +626,7 @@ const ProfilePage = () => {
         PaperProps={{ sx: { borderRadius: 3, p: 1 } }}
       >
         <DialogTitle sx={{ fontWeight: 800 }}>
-          {uploadType === 'avatar' ? 'Preview Profile Photo' : 'Preview Cover Image'}
+          {uploadType === 'avatar' ? 'Preview Profile Photo' : 'Preview Cover Photo'}
         </DialogTitle>
         <DialogContent sx={{ textAlign: 'center', py: 2 }}>
           {previewUrl && (
@@ -587,7 +664,7 @@ const ProfilePage = () => {
             startIcon={<CloudUploadIcon />}
             sx={{ borderRadius: 6, fontWeight: 700 }}
           >
-            Save Image
+            Apply Photo
           </Button>
         </DialogActions>
       </Dialog>

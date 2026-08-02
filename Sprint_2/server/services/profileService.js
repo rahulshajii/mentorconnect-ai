@@ -25,14 +25,54 @@ const getUserProfile = async (userId) => {
   };
 };
 
+// Helper function to sanitize skills array
+const sanitizeSkills = (skills) => {
+  if (!Array.isArray(skills)) return [];
+  return skills
+    .map((s) => {
+      if (typeof s === 'string') {
+        return { name: s.trim(), level: 'Intermediate' };
+      }
+      if (s && typeof s === 'object') {
+        const nameVal = s.name || s.skill || s.title || '';
+        return {
+          name: typeof nameVal === 'string' ? nameVal.trim() : String(nameVal).trim(),
+          level: s.level || 'Intermediate',
+        };
+      }
+      return null;
+    })
+    .filter((s) => s && s.name && s.name.length > 0);
+};
+
+// Helper function to sanitize expertise array
+const sanitizeExpertise = (expertise, defaultExp = 3) => {
+  if (!Array.isArray(expertise)) return [];
+  return expertise
+    .map((e) => {
+      if (typeof e === 'string') {
+        return { name: e.trim(), experience: defaultExp };
+      }
+      if (e && typeof e === 'object') {
+        const nameVal = e.name || e.skill || e.title || '';
+        return {
+          name: typeof nameVal === 'string' ? nameVal.trim() : String(nameVal).trim(),
+          experience: Number(e.experience) || defaultExp,
+        };
+      }
+      return null;
+    })
+    .filter((e) => e && e.name && e.name.length > 0);
+};
+
 const updateUserProfile = async (userId, updateData) => {
   const user = await User.findById(userId);
   if (!user) {
     throw new Error('User not found');
   }
 
-  if (updateData.name) {
-    user.name = updateData.name;
+  if (updateData.name && typeof updateData.name === 'string') {
+    user.name = updateData.name.trim();
     await user.save();
   }
 
@@ -60,16 +100,10 @@ const updateUserProfile = async (userId, updateData) => {
     }
 
     if (updateData.skills !== undefined) {
-      if (Array.isArray(updateData.skills)) {
-        profile.skills = updateData.skills.map((s) =>
-          typeof s === 'string' ? { name: s, level: 'Intermediate' } : s
-        );
-      } else if (typeof updateData.skills === 'string') {
-        profile.skills = updateData.skills.split(',').map((s) => ({
-          name: s.trim(),
-          level: 'Intermediate',
-        })).filter((s) => s.name);
-      }
+      profile.skills = sanitizeSkills(updateData.skills);
+    } else if (profile.skills) {
+      // Ensure existing skills array is sanitized against missing name properties
+      profile.skills = sanitizeSkills(profile.skills);
     }
 
     await profile.save();
@@ -79,9 +113,9 @@ const updateUserProfile = async (userId, updateData) => {
       profile = new MentorProfile({ userId: user._id });
     }
 
-    if (updateData.experience !== undefined) profile.experience = Number(updateData.experience);
+    if (updateData.experience !== undefined) profile.experience = Number(updateData.experience) || 1;
     if (updateData.sessionPrice !== undefined || updateData.hourlyFee !== undefined) {
-      profile.sessionPrice = Number(updateData.sessionPrice || updateData.hourlyFee);
+      profile.sessionPrice = Number(updateData.sessionPrice || updateData.hourlyFee) || 50;
     }
     if (updateData.bio !== undefined) profile.bio = updateData.bio;
     if (updateData.profileImage !== undefined || updateData.profilePicture !== undefined) {
@@ -100,20 +134,13 @@ const updateUserProfile = async (userId, updateData) => {
     if (updateData.availability !== undefined) {
       profile.availability = Array.isArray(updateData.availability)
         ? updateData.availability
-        : updateData.availability.split(',').map((s) => s.trim()).filter(Boolean);
+        : String(updateData.availability).split(',').map((s) => s.trim()).filter(Boolean);
     }
 
     if (updateData.expertise !== undefined) {
-      if (Array.isArray(updateData.expertise)) {
-        profile.expertise = updateData.expertise.map((e) =>
-          typeof e === 'string' ? { name: e, experience: profile.experience || 3 } : e
-        );
-      } else if (typeof updateData.expertise === 'string') {
-        profile.expertise = updateData.expertise.split(',').map((e) => ({
-          name: e.trim(),
-          experience: profile.experience || 3,
-        })).filter((e) => e.name);
-      }
+      profile.expertise = sanitizeExpertise(updateData.expertise, profile.experience || 3);
+    } else if (profile.expertise) {
+      profile.expertise = sanitizeExpertise(profile.expertise, profile.experience || 3);
     }
 
     await profile.save();
