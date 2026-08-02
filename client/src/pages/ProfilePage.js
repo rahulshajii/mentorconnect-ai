@@ -234,7 +234,7 @@ const ProfilePage = () => {
 
       await updateProfile(payload);
       setIsEditing(false);
-      toast.success('Profile updated successfully in MongoDB!');
+      toast.success('Profile updated successfully!');
     } catch (err) {
       const errMsg = err?.response?.data?.message || err?.message || 'Failed to update profile.';
       toast.error(errMsg);
