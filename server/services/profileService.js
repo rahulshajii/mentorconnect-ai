@@ -25,44 +25,55 @@ const getUserProfile = async (userId) => {
   };
 };
 
-// Helper function to sanitize skills array
+// Robust Helper function to sanitize skills array
 const sanitizeSkills = (skills) => {
   if (!Array.isArray(skills)) return [];
   return skills
     .map((s) => {
+      let nameStr = '';
+      let levelStr = 'Intermediate';
+
       if (typeof s === 'string') {
-        return { name: s.trim(), level: 'Intermediate' };
+        nameStr = s.trim();
+      } else if (s && typeof s === 'object') {
+        const doc = s._doc || s;
+        nameStr = (doc.name || doc.skill || doc.title || '').toString().trim();
+        levelStr = (doc.level || 'Intermediate').toString().trim();
       }
-      if (s && typeof s === 'object') {
-        const nameVal = s.name || s.skill || s.title || '';
-        return {
-          name: typeof nameVal === 'string' ? nameVal.trim() : String(nameVal).trim(),
-          level: s.level || 'Intermediate',
-        };
+
+      if (!nameStr) return null;
+
+      const validLevels = ['Beginner', 'Intermediate', 'Advanced', 'Expert'];
+      if (!validLevels.includes(levelStr)) {
+        levelStr = 'Intermediate';
       }
-      return null;
+
+      return { name: nameStr, level: levelStr };
     })
-    .filter((s) => s && s.name && s.name.length > 0);
+    .filter(Boolean);
 };
 
-// Helper function to sanitize expertise array
+// Robust Helper function to sanitize expertise array
 const sanitizeExpertise = (expertise, defaultExp = 3) => {
   if (!Array.isArray(expertise)) return [];
   return expertise
     .map((e) => {
+      let nameStr = '';
+      let expNum = defaultExp;
+
       if (typeof e === 'string') {
-        return { name: e.trim(), experience: defaultExp };
+        nameStr = e.trim();
+      } else if (e && typeof e === 'object') {
+        const doc = e._doc || e;
+        nameStr = (doc.name || doc.skill || doc.title || '').toString().trim();
+        expNum = Number(doc.experience) || defaultExp;
       }
-      if (e && typeof e === 'object') {
-        const nameVal = e.name || e.skill || e.title || '';
-        return {
-          name: typeof nameVal === 'string' ? nameVal.trim() : String(nameVal).trim(),
-          experience: Number(e.experience) || defaultExp,
-        };
-      }
-      return null;
+
+      if (!nameStr) return null;
+
+      return { name: nameStr, experience: expNum };
     })
-    .filter((e) => e && e.name && e.name.length > 0);
+    .filter(Boolean);
 };
 
 const updateUserProfile = async (userId, updateData) => {
@@ -102,9 +113,10 @@ const updateUserProfile = async (userId, updateData) => {
     if (updateData.skills !== undefined) {
       profile.skills = sanitizeSkills(updateData.skills);
     } else if (profile.skills) {
-      // Ensure existing skills array is sanitized against missing name properties
       profile.skills = sanitizeSkills(profile.skills);
     }
+
+    console.log('[DEBUG Mongoose LearnerProfile Pre-Save]:', JSON.stringify(profile.toObject(), null, 2));
 
     await profile.save();
   } else {
@@ -142,6 +154,8 @@ const updateUserProfile = async (userId, updateData) => {
     } else if (profile.expertise) {
       profile.expertise = sanitizeExpertise(profile.expertise, profile.experience || 3);
     }
+
+    console.log('[DEBUG Mongoose MentorProfile Pre-Save]:', JSON.stringify(profile.toObject(), null, 2));
 
     await profile.save();
   }

@@ -214,17 +214,23 @@ const ProfilePage = () => {
         payload.education = education.trim();
         payload.careerGoal = careerGoal.trim();
         payload.skills = skillsText
-          ? skillsText.split(',').map((s) => s.trim()).filter(Boolean)
-          : profile?.skills || [];
+          ? skillsText.split(',').map((s) => ({ name: s.trim(), level: 'Intermediate' })).filter((s) => s.name)
+          : (profile?.skills || [])
+              .map((s) => (typeof s === 'string' ? { name: s.trim(), level: 'Intermediate' } : { name: (s.name || s.skill || '').trim(), level: s.level || 'Intermediate' }))
+              .filter((s) => s.name);
       } else {
         payload.experience = Number(experience) || 1;
         payload.sessionPrice = Number(hourlyFee) || 50;
         payload.hourlyFee = Number(hourlyFee) || 50;
         payload.availability = availability;
         payload.expertise = expertiseText
-          ? expertiseText.split(',').map((e) => e.trim()).filter(Boolean)
-          : profile?.expertise || [];
+          ? expertiseText.split(',').map((e) => ({ name: e.trim(), experience: Number(experience) || 3 })).filter((e) => e.name)
+          : (profile?.expertise || [])
+              .map((e) => (typeof e === 'string' ? { name: e.trim(), experience: Number(experience) || 3 } : { name: (e.name || e.skill || '').trim(), experience: Number(e.experience) || 3 }))
+              .filter((e) => e.name);
       }
+
+      console.log('[DEBUG Frontend Profile Update Payload]:', JSON.stringify(payload, null, 2));
 
       await updateProfile(payload);
       setIsEditing(false);
