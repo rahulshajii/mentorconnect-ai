@@ -51,11 +51,15 @@ app.use(errorHandler);
 async function startServer() {
   await connectDB();
 
-  app.listen(PORT, () => {
+  const server = app.listen(PORT, 'localhost', () => {
     console.log(`=================================================`);
     console.log(` MentorConnect AI Backend running on port ${PORT}`);
     console.log(` API Base Endpoint: http://localhost:${PORT}/api`);
     console.log(`=================================================`);
+  });
+
+  server.on('error', (err) => {
+    console.warn(`Server Notice: ${err.message}`);
   });
 }
 
