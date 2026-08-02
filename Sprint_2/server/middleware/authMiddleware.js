@@ -12,25 +12,22 @@ const protect = async (req, res, next) => {
 
       req.user = await User.findById(decoded.id).select('-password');
       if (!req.user) {
-        return res.status(401).json({ message: 'User not found' });
+        return res.status(401).json({ message: 'User associated with token not found' });
       }
-      next();
+      return next();
     } catch (error) {
-      console.error(error);
-      return res.status(401).json({ message: 'Not authorized, token failed' });
+      return res.status(401).json({ message: 'Not authorized, token verification failed' });
     }
   }
 
-  if (!token) {
-    return res.status(401).json({ message: 'Not authorized, no token provided' });
-  }
+  return res.status(401).json({ message: 'Not authorized, no bearer token provided' });
 };
 
 const authorizeRoles = (...roles) => {
   return (req, res, next) => {
-    if (!roles.includes(req.user.role)) {
+    if (!req.user || !roles.includes(req.user.role)) {
       return res.status(403).json({
-        message: `User role '${req.user.role}' is not authorized to access this route`,
+        message: `User role '${req.user?.role || 'unknown'}' is not authorized to access this resource`,
       });
     }
     next();
