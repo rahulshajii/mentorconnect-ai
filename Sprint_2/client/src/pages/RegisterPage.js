@@ -23,7 +23,6 @@ import {
   Link as MuiLink,
 } from '@mui/material';
 import {
-  AutoAwesome as AutoAwesomeIcon,
   School as SchoolIcon,
   Work as WorkIcon,
   ArrowForward as ArrowForwardIcon,
@@ -36,6 +35,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../hooks/useAuth';
 import MainLayout from '../layouts/MainLayout';
+import Logo from '../components/Logo';
 
 const steps = [
   'Basic Information',
@@ -179,19 +179,8 @@ const RegisterPage = () => {
         <Paper elevation={3} sx={{ p: { xs: 3, md: 5 }, borderRadius: 4, bgcolor: '#ffffff' }}>
           {/* Header */}
           <Box sx={{ textAlign: 'center', mb: 4 }}>
-            <Box
-              sx={{
-                width: 44,
-                height: 44,
-                borderRadius: '10px',
-                bgcolor: '#0a66c2',
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                mb: 1.5,
-              }}
-            >
-              <AutoAwesomeIcon sx={{ color: '#ffffff', fontSize: 24 }} />
+            <Box sx={{ display: 'inline-block', mb: 1.5 }}>
+              <Logo size="large" />
             </Box>
             <Typography variant="h4" sx={{ fontWeight: 800, color: '#191919' }}>
               Create Your Account

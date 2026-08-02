@@ -51,6 +51,14 @@ const updateUserProfile = async (userId, updateData) => {
     }
     if (updateData.coverPicture !== undefined) profile.coverPicture = updateData.coverPicture;
 
+    if (updateData.socialLinks !== undefined) {
+      profile.socialLinks = {
+        github: updateData.socialLinks.github || profile.socialLinks?.github || '',
+        linkedin: updateData.socialLinks.linkedin || profile.socialLinks?.linkedin || '',
+        portfolio: updateData.socialLinks.portfolio || profile.socialLinks?.portfolio || '',
+      };
+    }
+
     if (updateData.skills !== undefined) {
       if (Array.isArray(updateData.skills)) {
         profile.skills = updateData.skills.map((s) =>
@@ -80,6 +88,14 @@ const updateUserProfile = async (userId, updateData) => {
       profile.profileImage = updateData.profileImage || updateData.profilePicture;
     }
     if (updateData.coverPicture !== undefined) profile.coverPicture = updateData.coverPicture;
+
+    if (updateData.socialLinks !== undefined) {
+      profile.socialLinks = {
+        github: updateData.socialLinks.github || profile.socialLinks?.github || '',
+        linkedin: updateData.socialLinks.linkedin || profile.socialLinks?.linkedin || '',
+        portfolio: updateData.socialLinks.portfolio || profile.socialLinks?.portfolio || '',
+      };
+    }
 
     if (updateData.availability !== undefined) {
       profile.availability = Array.isArray(updateData.availability)

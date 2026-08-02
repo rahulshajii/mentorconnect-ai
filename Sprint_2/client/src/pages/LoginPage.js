@@ -14,7 +14,6 @@ import {
   Grid,
 } from '@mui/material';
 import {
-  AutoAwesome as AutoAwesomeIcon,
   Login as LoginIcon,
   Visibility,
   VisibilityOff,
@@ -27,8 +26,8 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { motion } from 'framer-motion';
 import { useAuth } from '../hooks/useAuth';
 import MainLayout from '../layouts/MainLayout';
+import Logo from '../components/Logo';
 
-// Validation Schema using Yup
 const schema = yup.object().shape({
   email: yup.string().email('Please enter a valid email address').required('Email address is required'),
   password: yup.string().required('Password is required'),
@@ -61,7 +60,7 @@ const LoginPage = () => {
       const redirectPath = res.role === 'mentor' ? '/mentor/dashboard' : '/learner/dashboard';
       navigate(redirectPath);
     } catch (err) {
-      // Error handled in AuthContext with toast alert
+      // Handled in AuthContext with toast
     } finally {
       setLoading(false);
     }
@@ -72,7 +71,7 @@ const LoginPage = () => {
       <Box sx={{ minHeight: 'calc(100vh - 140px)', display: 'flex', alignItems: 'center', py: 6 }}>
         <Container maxWidth="lg">
           <Paper
-            elevation={3}
+            elevation={4}
             sx={{
               borderRadius: 4,
               overflow: 'hidden',
@@ -80,7 +79,7 @@ const LoginPage = () => {
             }}
           >
             <Grid container>
-              {/* Left Side - Image & Brand Overlay */}
+              {/* Left Side: Unsplash Background with High Contrast Dark Overlay */}
               <Grid
                 item
                 xs={12}
@@ -104,55 +103,40 @@ const LoginPage = () => {
                     position: 'absolute',
                     inset: 0,
                     background:
-                      'linear-gradient(180deg, rgba(10, 102, 194, 0.85) 0%, rgba(0, 65, 130, 0.95) 100%)',
+                      'linear-gradient(180deg, rgba(10, 102, 194, 0.88) 0%, rgba(15, 23, 42, 0.95) 100%)',
                     zIndex: 1,
                   }}
                 />
 
                 {/* Content over overlay */}
                 <Box sx={{ position: 'relative', zIndex: 2 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 4 }}>
-                    <Box
-                      sx={{
-                        width: 40,
-                        height: 40,
-                        borderRadius: '8px',
-                        bgcolor: '#ffffff',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}
-                    >
-                      <AutoAwesomeIcon sx={{ color: '#0a66c2', fontSize: 24 }} />
-                    </Box>
-                    <Typography variant="h5" sx={{ fontWeight: 800, color: '#ffffff' }}>
-                      MentorConnect AI
-                    </Typography>
+                  <Box sx={{ mb: 4 }}>
+                    <Logo size="large" colorMode="light" />
                   </Box>
 
                   <Typography variant="h3" sx={{ fontWeight: 800, mb: 2, color: '#ffffff', lineHeight: 1.2 }}>
                     Empowering professional skill growth through expert mentorship.
                   </Typography>
-                  <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.85)', fontSize: '1.05rem' }}>
-                    Connect 1-on-1 with verified industry leaders and accelerate your career path.
+                  <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.9)', fontSize: '1.05rem', fontWeight: 500 }}>
+                    Connect 1-on-1 with verified industry leaders and accelerate your career path with AMIE AI.
                   </Typography>
                 </Box>
 
                 <Box sx={{ position: 'relative', zIndex: 2 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                    <CheckCircleIcon sx={{ color: '#67e8f9', fontSize: 20 }} />
+                    <CheckCircleIcon sx={{ color: '#14b8a6', fontSize: 20 }} />
                     <Typography variant="body2" sx={{ color: '#ffffff', fontWeight: 600 }}>
-                      Structured Skill Verification & Career Guidance
+                      Structured Skill Assessment & Career Readiness
                     </Typography>
                   </Box>
                 </Box>
               </Grid>
 
-              {/* Right Side - Login Form with Motion Animation */}
+              {/* Right Side: Form */}
               <Grid item xs={12} md={6} sx={{ p: { xs: 4, sm: 6 }, display: 'flex', alignItems: 'center' }}>
                 <Box
                   component={motion.div}
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4 }}
                   sx={{ width: '100%' }}
@@ -162,7 +146,7 @@ const LoginPage = () => {
                       Sign In
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      Stay updated on your professional learning network
+                      Stay updated on your professional learning workspace
                     </Typography>
                   </Box>
 

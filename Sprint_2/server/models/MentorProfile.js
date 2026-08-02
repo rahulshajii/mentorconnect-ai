@@ -55,6 +55,11 @@ const mentorProfileSchema = new mongoose.Schema(
       type: String,
       default: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=1200&q=80',
     },
+    socialLinks: {
+      github: { type: String, default: '' },
+      linkedin: { type: String, default: '' },
+      portfolio: { type: String, default: '' },
+    },
   },
   {
     timestamps: true,
