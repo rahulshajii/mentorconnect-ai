@@ -33,6 +33,8 @@ import {
   AccessTime as AccessTimeIcon,
   School as SchoolIcon,
   Work as WorkIcon,
+  Psychology as PsychologyIcon,
+  TrendingUp as TrendingUpIcon,
 } from '@mui/icons-material';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
@@ -65,6 +67,9 @@ const DashboardLayout = ({ children }) => {
   const menuItems = isLearner
     ? [
         { text: 'Dashboard', icon: <DashboardIcon />, path: '/learner/dashboard' },
+        { text: 'Skill Assessment', icon: <PsychologyIcon />, path: '/quiz' },
+        { text: 'Skill Gap Analysis', icon: <TrendingUpIcon />, path: '/skill-gap' },
+        { text: 'AMIE Mentors', icon: <AutoAwesomeIcon />, path: '/recommendations' },
         { text: 'Profile', icon: <PersonIcon />, path: '/profile' },
         { text: 'Settings', icon: <SettingsIcon />, path: '/profile' },
       ]
@@ -104,7 +109,7 @@ const DashboardLayout = ({ children }) => {
       {/* User Badge Info */}
       <Box sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 1.5, bgcolor: '#f8fafc' }}>
         <Avatar
-          src={profile?.profilePicture || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name}`}
+          src={profile?.profilePicture || profile?.profileImage || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name}`}
           alt={user?.name}
           sx={{ width: 42, height: 42, border: `2px solid ${isLearner ? '#0a66c2' : '#057642'}` }}
         />
@@ -216,7 +221,7 @@ const DashboardLayout = ({ children }) => {
             </IconButton>
             <IconButton onClick={handleMenuOpen} sx={{ p: 0.5 }}>
               <Avatar
-                src={profile?.profilePicture || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name}`}
+                src={profile?.profilePicture || profile?.profileImage || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name}`}
                 alt={user?.name}
                 sx={{ width: 36, height: 36, border: '2px solid #0a66c2' }}
               />

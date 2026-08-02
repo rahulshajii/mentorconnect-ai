@@ -6,6 +6,9 @@ import RegisterPage from '../pages/RegisterPage';
 import LearnerDashboard from '../pages/LearnerDashboard';
 import MentorDashboard from '../pages/MentorDashboard';
 import ProfilePage from '../pages/ProfilePage';
+import QuizPage from '../pages/QuizPage';
+import SkillGapPage from '../pages/SkillGapPage';
+import RecommendedMentorsPage from '../pages/RecommendedMentorsPage';
 import NotFoundPage from '../pages/NotFoundPage';
 import ProtectedRoute from '../components/ProtectedRoute';
 
@@ -20,6 +23,9 @@ const AppRoutes = () => {
       {/* Protected Learner Routes */}
       <Route element={<ProtectedRoute allowedRoles={['learner']} />}>
         <Route path="/learner/dashboard" element={<LearnerDashboard />} />
+        <Route path="/quiz" element={<QuizPage />} />
+        <Route path="/skill-gap" element={<SkillGapPage />} />
+        <Route path="/recommendations" element={<RecommendedMentorsPage />} />
       </Route>
 
       {/* Protected Mentor Routes */}

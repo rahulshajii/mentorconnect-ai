@@ -1,50 +1,12 @@
-# MentorConnect AI — Production Build & PR Review Report
+# MentorConnect AI — Build & Verification Report
 
 ## Executive Summary
 
-This report documents the architectural verification, production build checks, and Pull Request (PR) code review for **MentorConnect AI** covering **Sprint 1 (Backlog RANS1 to RANS5)**.
+This report documents the architectural verification and production build checks for **MentorConnect AI** covering **Sprint 1 & Sprint 2**.
 
 ---
 
-## 1. Repository Structure Verification
-
-```text
-mentorconnect-ai/
-├── client/          # React.js Frontend App
-├── server/          # Node.js & Express API Backend
-├── docs/            # Architecture, API, Installation, Git & Folder Structure Docs
-├── screenshots/     # UI Preview Artifacts
-├── BuildReport.md   # Production Build & Verification Report
-├── README.md        # Primary GitHub Documentation
-├── LICENSE          # MIT License
-└── .gitignore       # Git Exclusions
-```
-
----
-
-## 2. Installed Packages & Versions
-
-### Frontend (`client/package.json`)
-- `react` (v19)
-- `@mui/material`, `@mui/icons-material`, `@emotion/react`, `@emotion/styled`
-- `react-router-dom` (v6)
-- `axios`
-- `react-hook-form`
-- `yup`
-- `@hookform/resolvers`
-- `framer-motion`
-- `react-hot-toast`
-
-### Backend (`server/package.json`)
-- `express` (v4.21)
-- `mongoose` (v8.9)
-- `bcryptjs` (v2.4)
-- `jsonwebtoken` (v9.0)
-- `cors` & `dotenv`
-
----
-
-## 3. Implemented Backlog Scope (Sprint 1)
+## 1. Implemented Backlog Scope
 
 | User Story ID | Feature Description | Status |
 |---|---|---|
@@ -53,20 +15,26 @@ mentorconnect-ai/
 | **RANS3** | Secure Login with bcrypt hashing & JWT Authentication | ✅ Production Ready |
 | **RANS4** | Learner Dashboard & Profile Management | ✅ Production Ready |
 | **RANS5** | Mentor Dashboard & Profile Management | ✅ Production Ready |
+| **RANS6** | Skill Assessment Quiz with Timer & Question Bank | ✅ Production Ready (Sprint 2) |
+| **RANS7** | Skill Gap Analysis & Target Career Goal Readiness | ✅ Production Ready (Sprint 2) |
+| **RANS8** | Explainable Mentor Recommendation Engine (AMIE v1) | ✅ Production Ready (Sprint 2) |
+| **RANS9** | View Recommended Mentors & Match Score Reasons | ✅ Production Ready (Sprint 2) |
 
 ---
 
-## 4. MongoDB Schema Verification
+## 2. MongoDB Schema Additions
 
 1. **`Users` Collection**: `name`, `email`, `password` (bcrypt), `role` (`learner` | `mentor`).
 2. **`LearnerProfiles` Collection**: `userId`, `education`, `careerGoal`, `bio`, `profileImage`, `skills` (`[{ name, level }]`).
 3. **`MentorProfiles` Collection**: `userId`, `experience`, `bio`, `profileImage`, `availability`, `sessionPrice`, `expertise` (`[{ name, experience }]`).
+4. **`QuizResults` Collection (Sprint 2)**: `userId`, `skill`, `score`, `totalQuestions`, `percentage`, `levelAssessed`, `answers`.
 
 ---
 
-## 5. Verification Checklist
+## 3. Sprint 2 Verification Checklist
 
-- [x] Compilation Check: `npm run build` in `/client` — **Compiled successfully with 0 errors & 0 warnings.**
+- [x] Compilation Check: `npm run build` in `Sprint_1/client/` — **Compiled successfully with 0 errors & 0 warnings.**
 - [x] Backend Verification: Server boots on port 5000 and connects to MongoDB.
-- [x] API Verification: Registered Learner & Mentor via API with structured skills and expertise arrays.
-- [x] Git Setup: Remote repository linked to `https://github.com/rahulshajii/mentorconnect-ai.git`.
+- [x] Quiz Assessment API Verification: `POST /api/quiz/start` and `POST /api/quiz/submit` tested cleanly.
+- [x] AMIE v1 Engine Verification: `GET /api/recommendations` calculates match score percentages and returns explainable reasons.
+- [x] Skill Gap Analysis Verification: `GET /api/skill-gap` categorizes strong, weak, and missing benchmark skills.
