@@ -109,37 +109,33 @@ const ProfilePage = () => {
     }
   }, [user, profile]);
 
-  // Helper Canvas Image Downscaling & Compression (Guarantees < 100KB Base64 payload!)
-  const compressImage = (file, maxWidth, maxHeight, quality = 0.8) => {
-    return new Promise((resolve) => {
+  // Helper Canvas Image Downscaling & Compression (Guarantees < 50KB Base64 payload!)
+  const compressImage = (file, maxWidth, maxHeight, quality = 0.7) => {
+    return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = (e) => {
         const img = new Image();
         img.onload = () => {
           const canvas = document.createElement('canvas');
-          let width = img.width;
-          let height = img.height;
-
-          if (width > maxWidth) {
-            height = Math.round((height * maxWidth) / width);
-            width = maxWidth;
-          }
-          if (height > maxHeight) {
-            width = Math.round((width * maxHeight) / height);
-            height = maxHeight;
-          }
+          let scale = Math.min(maxWidth / img.width, maxHeight / img.height, 1);
+          let width = Math.round(img.width * scale);
+          let height = Math.round(img.height * scale);
 
           canvas.width = width;
           canvas.height = height;
           const ctx = canvas.getContext('2d');
+          ctx.fillStyle = '#FFFFFF';
+          ctx.fillRect(0, 0, width, height);
           ctx.drawImage(img, 0, 0, width, height);
 
           // Compress as JPEG
           const dataUrl = canvas.toDataURL('image/jpeg', quality);
           resolve(dataUrl);
         };
+        img.onerror = (err) => reject(err);
         img.src = e.target.result;
       };
+      reader.onerror = (err) => reject(err);
       reader.readAsDataURL(file);
     });
   };
@@ -159,10 +155,11 @@ const ProfilePage = () => {
     setUploadType(type);
 
     try {
-      // Compress and resize: Avatar 350x350, Cover 1200x400
-      const maxWidth = type === 'avatar' ? 350 : 1200;
-      const maxHeight = type === 'avatar' ? 350 : 450;
-      const compressedDataUrl = await compressImage(file, maxWidth, maxHeight, 0.8);
+      // Compress and resize: Avatar 250x250 (15KB), Cover 800x300 (30KB)
+      const maxWidth = type === 'avatar' ? 250 : 800;
+      const maxHeight = type === 'avatar' ? 250 : 300;
+      const quality = type === 'avatar' ? 0.75 : 0.65;
+      const compressedDataUrl = await compressImage(file, maxWidth, maxHeight, quality);
 
       setPreviewUrl(compressedDataUrl);
       setUploadDialogOpen(true);
