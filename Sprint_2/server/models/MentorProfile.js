@@ -4,7 +4,7 @@ const expertiseSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: true,
+      default: 'General Expertise',
       trim: true,
     },
     experience: {

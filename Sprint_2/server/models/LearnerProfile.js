@@ -4,7 +4,7 @@ const skillSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: true,
+      default: 'General Skill',
       trim: true,
     },
     level: {
