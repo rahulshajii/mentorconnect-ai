@@ -273,7 +273,7 @@ const ProfilePage = () => {
           {/* Cover Photo Banner */}
           <Box
             sx={{
-              height: 220,
+              height: 240,
               position: 'relative',
               backgroundImage: `url(${coverPicture})`,
               backgroundSize: 'cover',
@@ -284,7 +284,7 @@ const ProfilePage = () => {
               sx={{
                 position: 'absolute',
                 inset: 0,
-                background: 'linear-gradient(180deg, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.65) 100%)',
+                background: 'linear-gradient(180deg, rgba(15, 23, 42, 0.35) 0%, rgba(15, 23, 42, 0.92) 100%)',
               }}
             />
 
@@ -296,12 +296,12 @@ const ProfilePage = () => {
                 startIcon={<PhotoCameraIcon />}
                 size="small"
                 sx={{
-                  bgcolor: 'rgba(15, 23, 42, 0.8)',
+                  bgcolor: 'rgba(15, 23, 42, 0.85)',
                   color: '#ffffff',
                   backdropFilter: 'blur(8px)',
                   borderRadius: 6,
                   fontWeight: 700,
-                  '&:hover': { bgcolor: 'rgba(15, 23, 42, 0.95)' },
+                  '&:hover': { bgcolor: 'rgba(15, 23, 42, 0.98)' },
                 }}
               >
                 Change Cover Photo
@@ -313,99 +313,137 @@ const ProfilePage = () => {
                 />
               </Button>
             </Box>
+
+            {/* User Name & Email inside Banner with Crisp White Text */}
+            <Box
+              sx={{
+                position: 'absolute',
+                bottom: 20,
+                left: { xs: 165, sm: 190 },
+                right: 20,
+                zIndex: 2,
+              }}
+            >
+              <Typography
+                variant="h4"
+                sx={{
+                  fontWeight: 800,
+                  color: '#ffffff',
+                  textShadow: '0 2px 8px rgba(0,0,0,0.8)',
+                  fontSize: { xs: '1.4rem', sm: '1.9rem' },
+                  letterSpacing: '-0.02em',
+                }}
+              >
+                {user?.name}
+              </Typography>
+              <Typography
+                variant="body1"
+                sx={{
+                  color: 'rgba(255, 255, 255, 0.92)',
+                  fontWeight: 600,
+                  textShadow: '0 1px 4px rgba(0,0,0,0.8)',
+                  mt: 0.3,
+                  fontSize: { xs: '0.875rem', sm: '1rem' },
+                }}
+              >
+                {user?.email}
+              </Typography>
+              <Chip
+                icon={
+                  user?.role === 'mentor' ? (
+                    <WorkIcon fontSize="small" style={{ color: '#ffffff' }} />
+                  ) : (
+                    <SchoolIcon fontSize="small" style={{ color: '#ffffff' }} />
+                  )
+                }
+                label={user?.role === 'mentor' ? 'Verified Mentor' : 'Active Learner'}
+                size="small"
+                sx={{
+                  mt: 1,
+                  fontWeight: 700,
+                  color: '#ffffff',
+                  bgcolor: user?.role === 'mentor' ? '#7c3aed' : '#0a66c2',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
+                }}
+              />
+            </Box>
           </Box>
 
           {/* Profile Header & Avatar */}
           <Box sx={{ px: { xs: 3, sm: 5 }, pb: 4, position: 'relative' }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', mb: 3, mt: -7 }}>
-              <Stack direction="row" spacing={3} alignItems="flex-end">
-                {/* Circular Avatar with Camera Icon Overlay */}
-                <Box sx={{ position: 'relative', display: 'inline-block' }}>
-                  <Avatar
-                    src={profilePicture || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name}`}
-                    alt={user?.name}
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3, mt: -7 }}>
+              {/* Circular Avatar with Camera Icon Overlay */}
+              <Box sx={{ position: 'relative', display: 'inline-block', zIndex: 3 }}>
+                <Avatar
+                  src={profilePicture || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name}`}
+                  alt={user?.name}
+                  sx={{
+                    width: 130,
+                    height: 130,
+                    border: '4px solid #ffffff',
+                    boxShadow: '0 6px 20px rgba(0,0,0,0.25)',
+                  }}
+                />
+                <Tooltip title="Change Profile Picture">
+                  <IconButton
+                    component="label"
                     sx={{
-                      width: 120,
-                      height: 120,
-                      border: '4px solid #ffffff',
-                      boxShadow: '0 4px 14px rgba(0,0,0,0.2)',
+                      position: 'absolute',
+                      bottom: 4,
+                      right: 4,
+                      bgcolor: '#0a66c2',
+                      color: '#ffffff',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
+                      '&:hover': { bgcolor: '#004182' },
                     }}
-                  />
-                  <Tooltip title="Change Profile Picture">
-                    <IconButton
-                      component="label"
-                      sx={{
-                        position: 'absolute',
-                        bottom: 4,
-                        right: 4,
-                        bgcolor: '#0a66c2',
-                        color: '#ffffff',
-                        boxShadow: '0 2px 6px rgba(0,0,0,0.3)',
-                        '&:hover': { bgcolor: '#004182' },
-                      }}
-                    >
-                      <PhotoCameraIcon fontSize="small" />
-                      <input
-                        type="file"
-                        hidden
-                        accept="image/jpeg,image/png,image/webp,image/jpg"
-                        onChange={(e) => handleFileSelect(e, 'avatar')}
-                      />
-                    </IconButton>
-                  </Tooltip>
-                </Box>
-
-                <Box sx={{ pb: 1 }}>
-                  <Typography variant="h4" sx={{ fontWeight: 800, color: '#191919' }}>
-                    {user?.name}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
-                    {user?.email}
-                  </Typography>
-                  <Chip
-                    icon={user?.role === 'mentor' ? <WorkIcon fontSize="small" /> : <SchoolIcon fontSize="small" />}
-                    label={user?.role === 'mentor' ? 'Verified Mentor' : 'Active Learner'}
-                    size="small"
-                    color={user?.role === 'mentor' ? 'secondary' : 'primary'}
-                    sx={{ mt: 1, fontWeight: 700 }}
-                  />
-                </Box>
-              </Stack>
+                  >
+                    <PhotoCameraIcon fontSize="small" />
+                    <input
+                      type="file"
+                      hidden
+                      accept="image/jpeg,image/png,image/webp,image/jpg"
+                      onChange={(e) => handleFileSelect(e, 'avatar')}
+                    />
+                  </IconButton>
+                </Tooltip>
+              </Box>
 
               {/* Action Buttons */}
-              {!isEditing ? (
-                <Button
-                  variant="contained"
-                  color="primary"
-                  startIcon={<EditIcon />}
-                  onClick={() => setIsEditing(true)}
-                  sx={{ borderRadius: 6, fontWeight: 700, px: 3 }}
-                >
-                  Edit Profile
-                </Button>
-              ) : (
-                <Stack direction="row" spacing={1.5}>
+              <Box sx={{ pt: 8 }}>
+                {!isEditing ? (
                   <Button
                     variant="contained"
-                    color="success"
-                    startIcon={<SaveIcon />}
-                    onClick={handleSave}
-                    disabled={loading}
+                    color="primary"
+                    startIcon={<EditIcon />}
+                    onClick={() => setIsEditing(true)}
                     sx={{ borderRadius: 6, fontWeight: 700, px: 3 }}
                   >
-                    {loading ? 'Saving...' : 'Save Profile'}
+                    Edit Profile
                   </Button>
-                  <Button
-                    variant="outlined"
-                    color="error"
-                    startIcon={<CancelIcon />}
-                    onClick={handleCancel}
-                    sx={{ borderRadius: 6, fontWeight: 700 }}
-                  >
-                    Cancel
-                  </Button>
-                </Stack>
-              )}
+                ) : (
+                  <Stack direction="row" spacing={1.5}>
+                    <Button
+                      variant="contained"
+                      color="success"
+                      startIcon={<SaveIcon />}
+                      onClick={handleSave}
+                      disabled={loading}
+                      sx={{ borderRadius: 6, fontWeight: 700, px: 3 }}
+                    >
+                      {loading ? 'Saving...' : 'Save Profile'}
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      color="error"
+                      startIcon={<CancelIcon />}
+                      onClick={handleCancel}
+                      sx={{ borderRadius: 6, fontWeight: 700 }}
+                    >
+                      Cancel
+                    </Button>
+                  </Stack>
+                )}
+              </Box>
             </Box>
 
             {/* Profile Completion Meter Widget */}
