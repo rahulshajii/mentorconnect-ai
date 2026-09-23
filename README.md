@@ -11,7 +11,7 @@
 
 ## 🚀 Project Overview
 
-MentorConnect AI is a SaaS mentoring platform connecting learners with domain experts. The platform features role-differentiated onboarding, 5-step stepper registration, structured skill level assessments, and stateless JSON Web Token (JWT) authentication backed by Express and MongoDB.
+MentorConnect AI is an AI-powered SaaS mentoring platform connecting learners with domain experts. The platform features role-differentiated onboarding, structured skill gap analysis via the Adaptive Mentoring Inference Engine (AMIE), interactive mentor discovery, multi-parameter filtering, session booking management, and real-time in-app notifications.
 
 ---
 
@@ -21,11 +21,11 @@ MentorConnect AI is a SaaS mentoring platform connecting learners with domain ex
 mentorconnect-ai/
 ├── client/          # React.js Frontend Application
 ├── server/          # Node.js & Express API Backend
-├── docs/            # Architecture, API, Installation, Git & Folder Structure Docs
-├── screenshots/     # UI Previews & Screenshots
-├── BuildReport.md   # Production Build & PR Review Report
-├── README.md        # GitHub Repository Overview
-├── LICENSE          # MIT License
+├── Sprint_1/        # Sprint 1 Codebase & Documentation (Auth & Profiles)
+├── Sprint_2/        # Sprint 2 Codebase & Documentation (Quiz & AMIE Engine)
+├── Sprint_3/        # Sprint 3 Codebase & Documentation (Discovery, Booking & Notifications)
+├── DATASET/         # Sample Data & Benchmark Assets
+├── README.md        # Repository Overview
 └── .gitignore       # Git Exclusions
 ```
 
@@ -37,6 +37,15 @@ mentorconnect-ai/
 - **Backend**: Node.js, Express.js
 - **Database**: MongoDB & Mongoose ODM
 - **Authentication**: JWT & bcryptjs password encryption
+- **AI Inference Engine**: AMIE Skill Gap Analysis & Mentor Matching Algorithm
+
+---
+
+## 🏁 Sprints Summary
+
+- **Sprint 1**: Core Authentication, Role-based Onboarding (Learner / Mentor), Stepper Profiles, JWT Auth.
+- **Sprint 2**: Skill Gap Assessment Quiz, Dynamic Radar Visualization, AMIE Matching Engine.
+- **Sprint 3**: Mentor Discovery (`/recommended-mentors`), Dedicated Mentor Profiles (`/mentor/:id`), Session Booking Modal (`BookingModal.jsx`), Booking Management Hub (`/sessions`), Real-time In-App Notifications.
 
 ---
 
@@ -52,25 +61,22 @@ npm start
 
 ### 2. Frontend Setup
 ```bash
-cd client
-npm install --legacy-peer-deps
+cd Sprint_3/client
+npm install
 npm start
 ```
 *Frontend runs on `http://localhost:3000`.*
 
 ---
 
-## 📚 Documentation Links
+## 📚 Sprint Documentation Links
 
-- **[System Architecture](docs/Architecture.md)**
-- **[Installation Guide](docs/Installation.md)**
-- **[API Reference](docs/API.md)**
-- **[Git Workflow](docs/GitSetup.md)**
-- **[Folder Structure](docs/FolderStructure.md)**
-- **[Build & Verification Report](BuildReport.md)**
+- **[Sprint 1 Documentation](Sprint_1/README.md)**
+- **[Sprint 2 Documentation](Sprint_2/README.md)**
+- **[Sprint 3 README](Sprint_3/README.md)** | **[Build Report](Sprint_3/BuildReport.md)** | **[API Docs](Sprint_3/docs/API.md)** | **[Architecture](Sprint_3/docs/Architecture.md)**
 
 ---
 
 ## 📄 License
 
-This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License — see the LICENSE file for details.

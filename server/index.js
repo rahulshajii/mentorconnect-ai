@@ -8,6 +8,8 @@ const mentorRoutes = require('./routes/mentorRoutes');
 const quizRoutes = require('./routes/quizRoutes');
 const recommendationRoutes = require('./routes/recommendationRoutes');
 const skillGapRoutes = require('./routes/skillGapRoutes');
+const sessionRoutes = require('./routes/sessionRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
 const { errorHandler } = require('./middleware/errorMiddleware');
 
 dotenv.config();
@@ -27,11 +29,13 @@ app.use('/api/mentors', mentorRoutes);
 app.use('/api/quiz', quizRoutes);
 app.use('/api/recommendations', recommendationRoutes);
 app.use('/api/skill-gap', skillGapRoutes);
+app.use('/api/sessions', sessionRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 app.get('/', (req, res) => {
   res.json({
     project: 'MentorConnect AI — AMIE Core API Engine',
-    sprint: 'Sprint 2 — Quiz, Skill Gap & Explainable AMIE Recommendations',
+    sprint: 'Sprint 3 — Mentor Discovery, Profile, Booking & Notifications',
     status: 'Active',
     endpoints: [
       '/api/auth',
@@ -40,6 +44,8 @@ app.get('/', (req, res) => {
       '/api/quiz',
       '/api/recommendations',
       '/api/skill-gap',
+      '/api/sessions',
+      '/api/notifications',
     ],
   });
 });
