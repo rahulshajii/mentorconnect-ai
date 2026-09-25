@@ -46,6 +46,12 @@ const MentorProfilePage = () => {
 
   useEffect(() => {
     const fetchMentorDetails = async () => {
+      if (!id || id === 'undefined') {
+        setError('Invalid mentor ID specified.');
+        setLoading(false);
+        return;
+      }
+
       setLoading(true);
       setError('');
       try {

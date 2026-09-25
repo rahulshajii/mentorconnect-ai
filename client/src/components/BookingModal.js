@@ -46,6 +46,17 @@ const BookingModal = ({ open, onClose, mentor, onBookingSuccess }) => {
 
   const todayStr = new Date().toISOString().split('T')[0];
 
+  const getMentorId = (m) => {
+    if (!m) return '';
+    return (
+      m.mentorId ||
+      m.mentorProfileId ||
+      (typeof m.userId === 'string' ? m.userId : m.userId?._id) ||
+      m._id ||
+      ''
+    );
+  };
+
   // Fetch slots whenever date or mentor changes
   useEffect(() => {
     const fetchSlots = async () => {
@@ -53,7 +64,7 @@ const BookingModal = ({ open, onClose, mentor, onBookingSuccess }) => {
       setLoadingSlots(true);
       setErrorMsg('');
       try {
-        const mentorId = mentor.userId?._id || mentor.userId || mentor._id;
+        const mentorId = getMentorId(mentor);
         const res = await getMentorAvailability(mentorId, date);
         setSlots(res.slots || []);
         // Auto-select first available slot if current selection invalid
@@ -88,7 +99,7 @@ const BookingModal = ({ open, onClose, mentor, onBookingSuccess }) => {
     setErrorMsg('');
 
     try {
-      const mentorId = mentor.userId?._id || mentor.userId || mentor._id;
+      const mentorId = getMentorId(mentor);
       const payload = {
         mentorId,
         date,

@@ -222,7 +222,7 @@ const RecommendedMentorsPage = () => {
         ) : (
           <Grid container spacing={3}>
             {filteredMentors.map((m) => {
-              const mentorId = m.userId?._id || m.userId || m._id;
+              const mentorId = m.mentorId || m.mentorProfileId || (typeof m.userId === 'string' ? m.userId : m.userId?._id) || m._id || 'unknown';
               const name = m.name || m.userId?.name || 'Verified Mentor';
               const avatar = m.profileImage || m.userId?.profileImage || `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`;
               const fee = m.sessionPrice || m.hourlyFee || 50;
