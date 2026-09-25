@@ -171,11 +171,62 @@ const updateUserProfile = async (userId, updateData) => {
 
 const getMentorsList = async () => {
   const mentors = await MentorProfile.find().populate('userId', 'name email role');
-  return mentors;
+  const mentorUsers = await User.find({ role: 'mentor' }).select('-password');
+
+  const profilesByUserId = new Map();
+  mentors.forEach((mp) => {
+    if (mp.userId) {
+      const uId = (mp.userId._id || mp.userId).toString();
+      profilesByUserId.set(uId, mp);
+    }
+  });
+
+  const fullMentorsList = mentorUsers.map((u) => {
+    const existingProfile = profilesByUserId.get(u._id.toString());
+    if (existingProfile) {
+      return existingProfile;
+    }
+    return {
+      _id: u._id,
+      userId: u,
+      experience: 3,
+      sessionPrice: 50,
+      bio: 'Experienced industry professional dedicated to mentoring next-gen talent.',
+      availability: ['Monday 10:00 AM - 12:00 PM', 'Wednesday 2:00 PM - 4:00 PM'],
+      expertise: [{ name: 'Software Architecture', experience: 3 }],
+      rating: 5.0,
+    };
+  });
+
+  return fullMentorsList;
+};
+
+const getMentorById = async (mentorId) => {
+  let profile = await MentorProfile.findById(mentorId).populate('userId', 'name email role');
+  if (!profile) {
+    profile = await MentorProfile.findOne({ userId: mentorId }).populate('userId', 'name email role');
+  }
+  if (!profile) {
+    const user = await User.findById(mentorId).select('-password');
+    if (user && user.role === 'mentor') {
+      return {
+        _id: user._id,
+        userId: user,
+        experience: 3,
+        sessionPrice: 50,
+        bio: 'Experienced industry professional dedicated to mentoring next-gen talent.',
+        availability: ['Monday 10:00 AM - 12:00 PM', 'Wednesday 2:00 PM - 4:00 PM'],
+        expertise: [{ name: 'Software Architecture', experience: 3 }],
+        rating: 5.0,
+      };
+    }
+  }
+  return profile;
 };
 
 module.exports = {
   getUserProfile,
   updateUserProfile,
   getMentorsList,
+  getMentorById,
 };

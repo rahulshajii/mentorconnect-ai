@@ -14,3 +14,13 @@ export const getMentors = async () => {
   const response = await API.get('/mentors');
   return response.data;
 };
+
+export const getMentorsList = async () => {
+  const response = await API.get('/mentors');
+  return response.data;
+};
+
+export const getMentorById = async (id) => {
+  const response = await API.get(`/mentors/${id}`);
+  return response.data;
+};

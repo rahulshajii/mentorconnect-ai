@@ -9,6 +9,8 @@ import ProfilePage from '../pages/ProfilePage';
 import QuizPage from '../pages/QuizPage';
 import SkillGapPage from '../pages/SkillGapPage';
 import RecommendedMentorsPage from '../pages/RecommendedMentorsPage';
+import MentorProfilePage from '../pages/MentorProfilePage';
+import SessionsPage from '../pages/SessionsPage';
 import NotFoundPage from '../pages/NotFoundPage';
 import ProtectedRoute from '../components/ProtectedRoute';
 
@@ -26,6 +28,7 @@ const AppRoutes = () => {
         <Route path="/quiz" element={<QuizPage />} />
         <Route path="/skill-gap" element={<SkillGapPage />} />
         <Route path="/recommendations" element={<RecommendedMentorsPage />} />
+        <Route path="/mentor/:id" element={<MentorProfilePage />} />
       </Route>
 
       {/* Protected Mentor Routes */}
@@ -36,6 +39,7 @@ const AppRoutes = () => {
       {/* Protected Common Routes */}
       <Route element={<ProtectedRoute allowedRoles={['learner', 'mentor']} />}>
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/sessions" element={<SessionsPage />} />
       </Route>
 
       {/* Fallback 404 Route */}

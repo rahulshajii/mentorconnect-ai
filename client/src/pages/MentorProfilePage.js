@@ -29,7 +29,7 @@ import {
 } from '@mui/icons-material';
 import DashboardLayout from '../layouts/DashboardLayout';
 import BookingModal from '../components/BookingModal';
-import { getMentorsList } from '../services/profileService';
+import { getMentorsList, getMentorById } from '../services/profileService';
 import { getRecommendations } from '../services/recommendationService';
 import { useAuth } from '../hooks/useAuth';
 
@@ -49,10 +49,24 @@ const MentorProfilePage = () => {
       setLoading(true);
       setError('');
       try {
-        const mentors = await getMentorsList();
-        const found = mentors.find(
-          (m) => (m.userId?._id || m.userId || m._id).toString() === id.toString()
-        );
+        let found = null;
+
+        // 1. Try direct API getMentorById
+        try {
+          found = await getMentorById(id);
+        } catch (apiErr) {
+          console.warn('Direct getMentorById API failed, attempting list fallback:', apiErr);
+        }
+
+        // 2. Fallback to searching getMentorsList if direct lookup returned nothing
+        if (!found) {
+          const mentors = await getMentorsList();
+          found = mentors.find((m) => {
+            const mProfId = (m._id || m.mentorProfileId)?.toString();
+            const mUserId = (m.userId?._id || m.userId || m.mentorId)?.toString();
+            return mProfId === id.toString() || mUserId === id.toString();
+          });
+        }
 
         if (!found) {
           setError('Mentor profile not found.');
@@ -66,9 +80,11 @@ const MentorProfilePage = () => {
         if (user?.role === 'learner') {
           try {
             const recRes = await getRecommendations();
-            const matchRec = recRes.recommendations?.find(
-              (r) => (r.userId || r._id).toString() === id.toString()
-            );
+            const matchRec = recRes.recommendations?.find((r) => {
+              const rUserId = (r.userId || r.mentorId || r._id)?.toString();
+              const rProfId = r.mentorProfileId?.toString();
+              return rUserId === id.toString() || rProfId === id.toString();
+            });
             if (matchRec) {
               setAmieMatch(matchRec);
             }

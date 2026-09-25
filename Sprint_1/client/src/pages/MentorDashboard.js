@@ -1,165 +1,332 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
-  Grid,
-  Card,
-  CardContent,
+  Container,
   Typography,
+  Grid,
+  Paper,
   Button,
   Avatar,
   Chip,
   Stack,
+  CircularProgress,
+  Divider,
+  Card,
+  CardContent,
 } from '@mui/material';
 import {
   People as PeopleIcon,
-  Event as EventIcon,
-  AccessTime as AccessTimeIcon,
-  AttachMoney as AttachMoneyIcon,
-  Edit as EditIcon,
-  Notifications as NotificationsIcon,
+  AttachMoney as MoneyIcon,
+  Star as StarIcon,
+  CalendarMonth as CalendarIcon,
+  CheckCircle as ConfirmIcon,
+  Block as RejectIcon,
+  Notifications as NotifIcon,
+  ArrowForward as ArrowIcon,
 } from '@mui/icons-material';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { useAuth } from '../hooks/useAuth';
 import DashboardLayout from '../layouts/DashboardLayout';
+import { getMentorSessions, updateSessionStatus } from '../services/sessionService';
+import { getNotifications } from '../services/notificationService';
 
 const MentorDashboard = () => {
   const { user, profile } = useAuth();
+  const navigate = useNavigate();
+
+  const [sessions, setSessions] = useState([]);
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const loadMentorData = async () => {
+    setLoading(true);
+    try {
+      const [sessData, notifData] = await Promise.all([
+        getMentorSessions().catch(() => []),
+        getNotifications().catch(() => ({ notifications: [] })),
+      ]);
+      setSessions(sessData || []);
+      setNotifications(notifData.notifications || []);
+    } catch (err) {
+      console.error('Error loading mentor dashboard:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (user) {
+      loadMentorData();
+    }
+  }, [user]);
+
+  const handleAccept = async (sessionId) => {
+    try {
+      await updateSessionStatus(sessionId, 'confirmed');
+      toast.success('Session request accepted!');
+      loadMentorData();
+    } catch (err) {
+      toast.error('Failed to accept session.');
+    }
+  };
+
+  const handleReject = async (sessionId) => {
+    try {
+      await updateSessionStatus(sessionId, 'rejected', 'Schedule conflict');
+      toast.success('Session request declined.');
+      loadMentorData();
+    } catch (err) {
+      toast.error('Failed to decline session.');
+    }
+  };
+
+  const pendingRequests = sessions.filter((s) => s.status === 'pending');
+  const confirmedSessions = sessions.filter((s) => s.status === 'confirmed');
+  const completedCount = sessions.filter((s) => s.status === 'completed').length;
+  const sessionFee = profile?.sessionPrice || profile?.hourlyFee || 50;
 
   return (
     <DashboardLayout>
-      {/* 1. Welcome Card */}
-      <Card sx={{ mb: 3, overflow: 'hidden' }}>
-        <Box sx={{ height: 90, bgcolor: '#057642', background: 'linear-gradient(90deg, #057642 0%, #024d2a 100%)' }} />
-        <CardContent sx={{ pt: 0, pb: 3, px: 3, position: 'relative' }}>
-          <Grid container spacing={3} alignItems="flex-end">
-            <Grid item sx={{ mt: -5 }}>
+      <Container maxWidth="lg" sx={{ pb: 6 }}>
+        {/* Unsplash High-Contrast Hero Banner */}
+        <Paper
+          elevation={4}
+          sx={{
+            p: { xs: 3, sm: 5 },
+            mb: 4,
+            borderRadius: 4,
+            position: 'relative',
+            overflow: 'hidden',
+            backgroundImage: 'url(https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=1400&q=80)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            color: '#ffffff',
+          }}
+        >
+          {/* Dark Overlay for WCAG Contrast Compliance */}
+          <Box
+            sx={{
+              position: 'absolute',
+              inset: 0,
+              background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(124, 58, 237, 0.85) 100%)',
+              zIndex: 1,
+            }}
+          />
+
+          <Box sx={{ position: 'relative', zIndex: 2 }}>
+            <Stack direction="row" spacing={3} alignItems="center">
               <Avatar
-                src={profile?.profilePicture || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name}`}
+                src={profile?.profileImage || profile?.profilePicture || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name}`}
                 alt={user?.name}
-                sx={{ width: 90, height: 90, border: '4px solid #ffffff', boxShadow: '0 2px 8px rgba(0,0,0,0.12)' }}
+                sx={{ width: 80, height: 80, border: '3px solid #ffffff', boxShadow: '0 4px 14px rgba(0,0,0,0.3)' }}
               />
-            </Grid>
-            <Grid item xs sx={{ pt: 1 }}>
-              <Stack direction="row" spacing={1} sx={{ mb: 0.5 }}>
-                <Chip label="Verified Mentor" color="secondary" size="small" sx={{ fontWeight: 700, height: 22 }} />
-                <Chip label={`${profile?.rating || 5.0} ★ Rating`} size="small" sx={{ bgcolor: 'rgba(234, 179, 8, 0.15)', color: '#b45309', fontWeight: 700, height: 22 }} />
-              </Stack>
-              <Typography variant="h4" sx={{ fontWeight: 800, color: '#191919' }}>
-                Welcome back, {user?.name}
-              </Typography>
-              <Typography variant="body1" color="text.secondary" sx={{ fontWeight: 500 }}>
-                Hourly Mentoring Rate: <strong>${profile?.hourlyFee || 0} / hr</strong> • Experience: {profile?.experience || 0} Years
-              </Typography>
-            </Grid>
-            <Grid item>
-              <Button
-                component={Link}
-                to="/profile"
-                variant="outlined"
-                color="secondary"
-                startIcon={<EditIcon />}
-                sx={{ borderRadius: 6 }}
-              >
-                Edit Credentials
-              </Button>
-            </Grid>
-          </Grid>
-        </CardContent>
-      </Card>
+              <Box>
+                <Typography variant="h3" sx={{ fontWeight: 800, textShadow: '0 2px 4px rgba(0,0,0,0.5)', fontSize: { xs: '1.8rem', sm: '2.5rem' } }}>
+                  Welcome back, {user?.name}!
+                </Typography>
+                <Typography variant="subtitle1" sx={{ color: 'rgba(255, 255, 255, 0.95)', fontWeight: 500, mt: 0.5 }}>
+                  Senior Verified Mentor ({profile?.experience || 3}+ Years Exp.) | Hourly Session Rate: <strong>${sessionFee}/hr</strong>
+                </Typography>
+              </Box>
+            </Stack>
+          </Box>
+        </Paper>
 
-      <Grid container spacing={3}>
-        {/* 2. Students Summary Card */}
-        <Grid item xs={12} sm={6} md={3}>
-          <Card>
-            <CardContent>
-              <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
-                <Typography variant="subtitle2" color="text.secondary">Active Students</Typography>
-                <PeopleIcon color="primary" />
-              </Stack>
-              <Typography variant="h3" sx={{ fontWeight: 800, color: '#191919' }}>14</Typography>
-              <Typography variant="caption" color="success.main">+2 this week</Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        {/* 3. Requests Summary Card */}
-        <Grid item xs={12} sm={6} md={3}>
-          <Card>
-            <CardContent>
-              <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
-                <Typography variant="subtitle2" color="text.secondary">Pending Requests</Typography>
-                <EventIcon color="secondary" />
-              </Stack>
-              <Typography variant="h3" sx={{ fontWeight: 800, color: '#191919' }}>3</Typography>
-              <Typography variant="caption" color="warning.main">Action Needed</Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        {/* 4. Availability Slot Count */}
-        <Grid item xs={12} sm={6} md={3}>
-          <Card>
-            <CardContent>
-              <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
-                <Typography variant="subtitle2" color="text.secondary">Availability Slots</Typography>
-                <AccessTimeIcon color="success" />
-              </Stack>
-              <Typography variant="h3" sx={{ fontWeight: 800, color: '#191919' }}>{profile?.availability?.length || 1}</Typography>
-              <Typography variant="caption" color="text.secondary">Active Schedule</Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        {/* 5. Revenue Summary */}
-        <Grid item xs={12} sm={6} md={3}>
-          <Card>
-            <CardContent>
-              <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
-                <Typography variant="subtitle2" color="text.secondary">Mentorship Earnings</Typography>
-                <AttachMoneyIcon color="primary" />
-              </Stack>
-              <Typography variant="h3" sx={{ fontWeight: 800, color: '#0a66c2' }}>$1,850</Typography>
-              <Typography variant="caption" color="text.secondary">This month</Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        {/* 6. Availability Details Card */}
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-                <AccessTimeIcon color="primary" /> Configured Availability Schedule
-              </Typography>
-              <Stack spacing={1}>
-                {profile?.availability?.map((slot, idx) => (
-                  <Box key={idx} sx={{ p: 1.5, bgcolor: 'rgba(5, 118, 66, 0.08)', border: '1px solid rgba(5, 118, 66, 0.2)', borderRadius: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <AccessTimeIcon fontSize="small" sx={{ color: '#057642' }} />
-                    <Typography variant="body2" sx={{ fontWeight: 600 }}>{slot}</Typography>
+        {/* Key Metrics Grid */}
+        <Grid container spacing={3} sx={{ mb: 4 }}>
+          <Grid item xs={12} sm={6} md={3}>
+            <Card elevation={2} sx={{ borderRadius: 3, border: '1px solid #e2e8f0' }}>
+              <CardContent sx={{ p: 2.5 }}>
+                <Stack direction="row" justifyContent="space-between" alignItems="center">
+                  <Box>
+                    <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700 }}>
+                      Pending Requests
+                    </Typography>
+                    <Typography variant="h4" sx={{ fontWeight: 800, color: '#f59e0b', mt: 0.5 }}>
+                      {pendingRequests.length}
+                    </Typography>
                   </Box>
-                ))}
-              </Stack>
-            </CardContent>
-          </Card>
+                  <Avatar sx={{ bgcolor: '#fef3c7', color: '#f59e0b' }}>
+                    <CalendarIcon />
+                  </Avatar>
+                </Stack>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={3}>
+            <Card elevation={2} sx={{ borderRadius: 3, border: '1px solid #e2e8f0' }}>
+              <CardContent sx={{ p: 2.5 }}>
+                <Stack direction="row" justifyContent="space-between" alignItems="center">
+                  <Box>
+                    <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700 }}>
+                      Confirmed Sessions
+                    </Typography>
+                    <Typography variant="h4" sx={{ fontWeight: 800, color: '#10b981', mt: 0.5 }}>
+                      {confirmedSessions.length}
+                    </Typography>
+                  </Box>
+                  <Avatar sx={{ bgcolor: '#d1fae5', color: '#10b981' }}>
+                    <PeopleIcon />
+                  </Avatar>
+                </Stack>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={3}>
+            <Card elevation={2} sx={{ borderRadius: 3, border: '1px solid #e2e8f0' }}>
+              <CardContent sx={{ p: 2.5 }}>
+                <Stack direction="row" justifyContent="space-between" alignItems="center">
+                  <Box>
+                    <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700 }}>
+                      Completed Sessions
+                    </Typography>
+                    <Typography variant="h4" sx={{ fontWeight: 800, color: '#0a66c2', mt: 0.5 }}>
+                      {completedCount}
+                    </Typography>
+                  </Box>
+                  <Avatar sx={{ bgcolor: '#e0f2fe', color: '#0a66c2' }}>
+                    <StarIcon />
+                  </Avatar>
+                </Stack>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={3}>
+            <Card elevation={2} sx={{ borderRadius: 3, border: '1px solid #e2e8f0' }}>
+              <CardContent sx={{ p: 2.5 }}>
+                <Stack direction="row" justifyContent="space-between" alignItems="center">
+                  <Box>
+                    <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700 }}>
+                      Est. Earnings
+                    </Typography>
+                    <Typography variant="h4" sx={{ fontWeight: 800, color: '#7c3aed', mt: 0.5 }}>
+                      ${(completedCount + confirmedSessions.length) * sessionFee}
+                    </Typography>
+                  </Box>
+                  <Avatar sx={{ bgcolor: '#f3e8ff', color: '#7c3aed' }}>
+                    <MoneyIcon />
+                  </Avatar>
+                </Stack>
+              </CardContent>
+            </Card>
+          </Grid>
         </Grid>
 
-        {/* 7. Notifications Card */}
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-                <NotificationsIcon color="secondary" /> Notifications & System Alerts
-              </Typography>
-              <Stack spacing={1.5}>
-                <Box sx={{ p: 1.5, bgcolor: '#f8fafc', borderRadius: 2 }}>
-                  <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>Mentor Credentials Active</Typography>
-                  <Typography variant="caption" color="text.secondary">Your profile is visible to registered learners on MentorConnect AI.</Typography>
-                </Box>
+        <Grid container spacing={4}>
+          {/* Pending Session Requests Widget */}
+          <Grid item xs={12} md={7}>
+            <Paper elevation={0} sx={{ p: 3, borderRadius: 4, border: '1px solid #e2e8f0', bgcolor: '#ffffff', mb: 4 }}>
+              <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
+                <Typography variant="h6" sx={{ fontWeight: 800, color: '#0f172a' }}>
+                  Pending Learner Requests
+                </Typography>
+                <Button size="small" endIcon={<ArrowIcon />} onClick={() => navigate('/sessions')} sx={{ fontWeight: 700 }}>
+                  Manage All
+                </Button>
               </Stack>
-            </CardContent>
-          </Card>
+              <Divider sx={{ mb: 2 }} />
+
+              {loading ? (
+                <CircularProgress size={24} sx={{ my: 2 }} />
+              ) : pendingRequests.length === 0 ? (
+                <Box sx={{ p: 3, textAlign: 'center', bgcolor: '#f8fafc', borderRadius: 3 }}>
+                  <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>
+                    No pending session requests at this time.
+                  </Typography>
+                </Box>
+              ) : (
+                <Stack spacing={2}>
+                  {pendingRequests.map((sess) => {
+                    const learnerName = sess.learnerId?.name || 'Active Learner';
+                    const learnerImg = sess.learnerProfile?.profileImage || sess.learnerId?.profileImage || `https://api.dicebear.com/7.x/avataaars/svg?seed=${learnerName}`;
+
+                    return (
+                      <Paper key={sess._id} elevation={0} sx={{ p: 2, bgcolor: '#fffbe6', borderRadius: 3, border: '1px solid #ffe58f' }}>
+                        <Grid container spacing={2} alignItems="center">
+                          <Grid item xs={12} sm={7}>
+                            <Stack direction="row" spacing={2} alignItems="center">
+                              <Avatar src={learnerImg} alt={learnerName} sx={{ width: 46, height: 46, border: '2px solid #f59e0b' }} />
+                              <Box>
+                                <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#0f172a' }}>
+                                  {learnerName}
+                                </Typography>
+                                <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600, display: 'block' }}>
+                                  {sess.date} @ {sess.startTime} — "{sess.topic}"
+                                </Typography>
+                              </Box>
+                            </Stack>
+                          </Grid>
+
+                          <Grid item xs={12} sm={5} sx={{ textAlign: { sm: 'right' } }}>
+                            <Stack direction="row" spacing={1} justifyContent={{ sm: 'flex-end' }}>
+                              <Button
+                                size="small"
+                                variant="contained"
+                                color="success"
+                                startIcon={<ConfirmIcon />}
+                                onClick={() => handleAccept(sess._id)}
+                                sx={{ borderRadius: 6, fontWeight: 700 }}
+                              >
+                                Accept
+                              </Button>
+                              <Button
+                                size="small"
+                                variant="outlined"
+                                color="error"
+                                startIcon={<RejectIcon />}
+                                onClick={() => handleReject(sess._id)}
+                                sx={{ borderRadius: 6, fontWeight: 700 }}
+                              >
+                                Decline
+                              </Button>
+                            </Stack>
+                          </Grid>
+                        </Grid>
+                      </Paper>
+                    );
+                  })}
+                </Stack>
+              )}
+            </Paper>
+          </Grid>
+
+          {/* Right Column: Notifications */}
+          <Grid item xs={12} md={5}>
+            <Paper elevation={0} sx={{ p: 3, borderRadius: 4, border: '1px solid #e2e8f0', bgcolor: '#ffffff' }}>
+              <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 2 }}>
+                <NotifIcon color="primary" />
+                <Typography variant="h6" sx={{ fontWeight: 800, color: '#0f172a' }}>
+                  Recent Notifications
+                </Typography>
+              </Stack>
+              <Divider sx={{ mb: 2 }} />
+
+              {notifications.length === 0 ? (
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', textAlign: 'center', py: 2 }}>
+                  No recent notifications.
+                </Typography>
+              ) : (
+                <Stack spacing={1.5}>
+                  {notifications.slice(0, 4).map((n) => (
+                    <Box key={n._id} sx={{ p: 1.5, bgcolor: n.isRead ? '#f8fafc' : '#f0f9ff', borderRadius: 2, borderLeft: '4px solid #7c3aed' }}>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#0f172a', fontSize: '0.85rem' }}>
+                        {n.title}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.3 }}>
+                        {n.message}
+                      </Typography>
+                    </Box>
+                  ))}
+                </Stack>
+              )}
+            </Paper>
+          </Grid>
         </Grid>
-      </Grid>
+      </Container>
     </DashboardLayout>
   );
 };

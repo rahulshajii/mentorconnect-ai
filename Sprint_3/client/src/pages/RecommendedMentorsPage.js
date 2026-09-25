@@ -61,11 +61,15 @@ const RecommendedMentorsPage = () => {
       try {
         let mentorList = [];
         if (user?.role === 'learner') {
-          // Load explainable AMIE recommendations
-          const recRes = await getRecommendations();
-          mentorList = recRes.recommendations || [];
-        } else {
-          // Load standard mentor list
+          try {
+            const recRes = await getRecommendations();
+            mentorList = recRes.recommendations || [];
+          } catch (recErr) {
+            console.warn('AMIE recommendation lookup failed, using general list:', recErr);
+          }
+        }
+
+        if (!mentorList || mentorList.length === 0) {
           const allMentors = await getMentorsList();
           mentorList = allMentors.map((m) => ({
             ...m,

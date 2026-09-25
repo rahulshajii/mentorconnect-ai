@@ -71,7 +71,6 @@ export const AuthProvider = ({ children }) => {
       const data = await profileService.updateProfile(updateData);
       setUser({ _id: data._id, name: data.name, email: data.email, role: data.role });
       setProfile(data.profile);
-      toast.success('Profile updated successfully!');
       return data;
     } catch (err) {
       const msg = err.response?.data?.message || err.message || 'Failed to update profile';

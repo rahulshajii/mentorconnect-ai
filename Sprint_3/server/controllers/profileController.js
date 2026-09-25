@@ -13,7 +13,6 @@ const updateProfile = async (req, res, next) => {
   try {
     console.log('[DEBUG Express Controller updateProfile req.body]:', JSON.stringify(req.body, null, 2));
 
-    // Step 9 Defensive Validation for skills array
     if (req.body.skills && Array.isArray(req.body.skills)) {
       for (let i = 0; i < req.body.skills.length; i++) {
         const item = req.body.skills[i];
@@ -45,8 +44,21 @@ const getMentors = async (req, res, next) => {
   }
 };
 
+const getMentorById = async (req, res, next) => {
+  try {
+    const mentor = await profileService.getMentorById(req.params.id);
+    if (!mentor) {
+      return res.status(404).json({ message: 'Mentor profile not found.' });
+    }
+    res.status(200).json(mentor);
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getProfile,
   updateProfile,
   getMentors,
+  getMentorById,
 };
