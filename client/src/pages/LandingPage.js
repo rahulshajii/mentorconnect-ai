@@ -19,9 +19,6 @@ import {
   ArrowForward as ArrowForwardIcon,
   CheckCircle as CheckCircleIcon,
   Psychology as PsychologyIcon,
-  School as CourseIcon,
-  People as PeopleIcon,
-  Star as StarIcon,
 } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';

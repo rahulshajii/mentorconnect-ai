@@ -29,7 +29,6 @@ import {
   AutoAwesome as AutoAwesomeIcon,
   People as PeopleIcon,
   Event as EventIcon,
-  AccessTime as AccessTimeIcon,
   School as SchoolIcon,
   Work as WorkIcon,
   Psychology as PsychologyIcon,
@@ -70,14 +69,16 @@ const DashboardLayout = ({ children }) => {
     menuItems = [
       { text: 'Admin Portal', icon: <DashboardIcon />, path: '/admin' },
       { text: 'Course Catalog', icon: <SchoolIcon />, path: '/courses' },
+      { text: 'Session Management', icon: <EventIcon />, path: '/sessions' },
       { text: 'Profile Settings', icon: <PersonIcon />, path: '/profile' },
     ];
   } else if (isLearner) {
     menuItems = [
       { text: 'Dashboard', icon: <DashboardIcon />, path: '/learner/dashboard' },
       { text: 'Course Catalog', icon: <SchoolIcon />, path: '/courses' },
-      { text: 'My Courses', icon: <EventIcon />, path: '/my-courses' },
+      { text: 'My Courses', icon: <SchoolIcon />, path: '/my-courses' },
       { text: 'Certificates', icon: <AutoAwesomeIcon />, path: '/certificates' },
+      { text: 'Mentoring Sessions', icon: <EventIcon />, path: '/sessions' },
       { text: 'Skill Assessment', icon: <PsychologyIcon />, path: '/quiz' },
       { text: 'Skill Gap Analysis', icon: <TrendingUpIcon />, path: '/skill-gap' },
       { text: 'AMIE Mentors', icon: <PeopleIcon />, path: '/recommendations' },
@@ -87,10 +88,8 @@ const DashboardLayout = ({ children }) => {
     menuItems = [
       { text: 'Dashboard', icon: <DashboardIcon />, path: '/mentor/dashboard' },
       { text: 'Course Catalog', icon: <SchoolIcon />, path: '/courses' },
+      { text: 'Mentoring Sessions', icon: <EventIcon />, path: '/sessions' },
       { text: 'Profile Settings', icon: <PersonIcon />, path: '/profile' },
-      { text: 'Students', icon: <PeopleIcon />, path: '/mentor/dashboard' },
-      { text: 'Availability', icon: <AccessTimeIcon />, path: '/mentor/dashboard' },
-      { text: 'Requests', icon: <EventIcon />, path: '/mentor/dashboard' },
     ];
   }
 

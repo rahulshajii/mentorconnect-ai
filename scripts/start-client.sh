@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# MentorConnect AI - Sprint 6 Start Frontend Client
+# MentorConnect AI - Start Frontend Client
 # ==============================================================================
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SPRINT6_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-CLIENT_DIR="$SPRINT6_DIR/client"
+ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+CLIENT_DIR="$ROOT_DIR/client"
 
-echo "Starting Sprint 6 Frontend Client on port 3000..."
+echo "Starting MentorConnect AI Frontend Client..."
 cd "$CLIENT_DIR"
 npm start

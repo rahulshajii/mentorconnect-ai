@@ -12,20 +12,18 @@ import {
   Chip,
   Stack,
   Divider,
-  CircularProgress,
-  Paper,
 } from '@mui/material';
 import {
   PlayCircle as ContinueIcon,
   CheckCircle as CompletedIcon,
   WorkspacePremium as CertificateIcon,
   School as CourseIcon,
-  ArrowForward as ArrowIcon,
 } from '@mui/icons-material';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import DashboardLayout from '../layouts/DashboardLayout';
 import * as courseService from '../services/courseService';
+import { LoadingScreen, EmptyState } from '../components/common';
 
 const MyCoursesPage = () => {
   const { user } = useAuth();
@@ -66,29 +64,15 @@ const MyCoursesPage = () => {
         </Box>
 
         {loading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}>
-            <CircularProgress size={48} />
-          </Box>
+          <LoadingScreen message="Loading your enrolled courses..." fullPage={false} />
         ) : enrollments.length === 0 ? (
-          <Paper sx={{ p: 6, textAlign: 'center', borderRadius: 3 }}>
-            <CourseIcon sx={{ fontSize: 64, color: '#94a3b8', mb: 2 }} />
-            <Typography variant="h5" sx={{ fontWeight: 700, mb: 1 }}>
-              You have not enrolled in any courses yet
-            </Typography>
-            <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-              Explore our industry-aligned catalog and start your personalized learning journey today.
-            </Typography>
-            <Button
-              variant="contained"
-              color="primary"
-              component={Link}
-              to="/courses"
-              endIcon={<ArrowIcon />}
-              sx={{ py: 1.2, px: 3, borderRadius: 2 }}
-            >
-              Browse Course Catalog
-            </Button>
-          </Paper>
+          <EmptyState
+            icon={<CourseIcon sx={{ fontSize: 32 }} />}
+            title="You have not enrolled in any courses yet"
+            description="Explore our industry-aligned catalog and start your personalized learning journey today."
+            actionLabel="Browse Course Catalog"
+            onAction={() => navigate('/courses')}
+          />
         ) : (
           <Grid container spacing={3.5}>
             {enrollments.map((item) => {

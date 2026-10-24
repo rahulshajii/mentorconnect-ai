@@ -13,7 +13,6 @@ import {
   Tab,
   Card,
   CardContent,
-  CircularProgress,
   IconButton,
   Tooltip,
   Dialog,
@@ -40,6 +39,7 @@ import {
   getMentorSessions,
   updateSessionStatus,
 } from '../services/sessionService';
+import { LoadingScreen, EmptyState } from '../components/common';
 
 const SessionsPage = () => {
   const { user } = useAuth();
@@ -158,19 +158,13 @@ const SessionsPage = () => {
 
         {/* Sessions List */}
         {loading ? (
-          <Box sx={{ textAlign: 'center', py: 6 }}>
-            <CircularProgress />
-          </Box>
+          <LoadingScreen message="Loading mentoring sessions..." fullPage={false} />
         ) : filteredSessions.length === 0 ? (
-          <Paper elevation={0} sx={{ p: 6, textCenter: 'center', textAlign: 'center', bgcolor: '#f8fafc', borderRadius: 4, border: '1px border-dashed #cbd5e1' }}>
-            <CalendarIcon sx={{ fontSize: 48, color: '#94a3b8', mb: 1 }} />
-            <Typography variant="h6" sx={{ fontWeight: 700, color: '#334155' }}>
-              No Sessions Found
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-              There are no mentoring sessions in this category.
-            </Typography>
-          </Paper>
+          <EmptyState
+            icon={<CalendarIcon sx={{ fontSize: 32 }} />}
+            title="No Sessions Found"
+            description="There are no mentoring sessions in this category."
+          />
         ) : (
           <Grid container spacing={3}>
             {filteredSessions.map((sess) => {
