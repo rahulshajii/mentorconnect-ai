@@ -9,7 +9,18 @@ const notificationSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ['booking_request', 'booking_confirmed', 'booking_rejected', 'booking_cancelled', 'session_reminder', 'system'],
+      enum: [
+        'booking_request',
+        'booking_confirmed',
+        'booking_rejected',
+        'booking_cancelled',
+        'session_reminder',
+        'system',
+        'course_enrolled',
+        'payment_success',
+        'course_completed',
+        'certificate_issued',
+      ],
       default: 'system',
     },
     title: {
@@ -26,6 +37,15 @@ const notificationSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Session',
       default: null,
+    },
+    relatedCourseId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Course',
+      default: null,
+    },
+    link: {
+      type: String,
+      default: '',
     },
     isRead: {
       type: Boolean,

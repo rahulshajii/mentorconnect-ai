@@ -20,11 +20,8 @@ import {
   Divider,
 } from '@mui/material';
 import {
-  Star as StarIcon,
-  Work as WorkIcon,
   CheckCircle as CheckIcon,
   Search as SearchIcon,
-  FilterList as FilterIcon,
   CalendarMonth as BookIcon,
   Visibility as ViewProfileIcon,
   AutoAwesome as AiIcon,

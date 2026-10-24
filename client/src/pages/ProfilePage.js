@@ -35,6 +35,7 @@ import {
 import toast from 'react-hot-toast';
 import { useAuth } from '../hooks/useAuth';
 import DashboardLayout from '../layouts/DashboardLayout';
+import { getProfile } from '../services/profileService';
 
 const ProfilePage = () => {
   const { user, profile, updateProfile } = useAuth();
@@ -70,42 +71,55 @@ const ProfilePage = () => {
   const [previewUrl, setPreviewUrl] = useState('');
   const [uploadProgress, setUploadProgress] = useState(0);
 
-  useEffect(() => {
-    if (user && profile) {
-      setName(user.name || '');
-      setBio(profile.bio || '');
-      setProfilePicture(profile.profileImage || profile.profilePicture || '');
+  const applyProfileData = (u, p) => {
+    if (u?.name) setName(u.name);
+    if (p) {
+      if (p.bio !== undefined) setBio(p.bio || '');
+      setProfilePicture(p.profileImage || p.profilePicture || '');
       setCoverPicture(
-        profile.coverPicture ||
-          (user.role === 'mentor'
+        p.coverPicture ||
+          (u?.role === 'mentor'
             ? 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=1200&q=80'
             : 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1200&q=80')
       );
 
-      setGithub(profile.socialLinks?.github || '');
-      setLinkedin(profile.socialLinks?.linkedin || '');
-      setPortfolio(profile.socialLinks?.portfolio || '');
+      setGithub(p.socialLinks?.github || '');
+      setLinkedin(p.socialLinks?.linkedin || '');
+      setPortfolio(p.socialLinks?.portfolio || '');
 
-      if (user.role === 'learner') {
-        setEducation(profile.education || '');
-        setCareerGoal(profile.careerGoal || '');
-        if (Array.isArray(profile.skills)) {
-          setSkillsText(profile.skills.map((s) => (typeof s === 'string' ? s : s.name)).filter(Boolean).join(', '));
+      if (u?.role === 'learner') {
+        setEducation(p.education || '');
+        setCareerGoal(p.careerGoal || '');
+        if (Array.isArray(p.skills)) {
+          setSkillsText(p.skills.map((s) => (typeof s === 'string' ? s : s.name)).filter(Boolean).join(', '));
         } else {
           setSkillsText('');
         }
-      } else {
-        setExperience(profile.experience || 1);
-        setHourlyFee(profile.sessionPrice || profile.hourlyFee || 50);
+      } else if (u?.role === 'mentor') {
+        setExperience(p.experience || 1);
+        setHourlyFee(p.sessionPrice || p.hourlyFee || 50);
         setAvailability(
-          Array.isArray(profile.availability) ? profile.availability.join(', ') : profile.availability || ''
+          Array.isArray(p.availability) ? p.availability.join(', ') : p.availability || 'Mon-Fri 10am-4pm'
         );
-        if (Array.isArray(profile.expertise)) {
-          setExpertiseText(profile.expertise.map((e) => (typeof e === 'string' ? e : e.name)).filter(Boolean).join(', '));
+        if (Array.isArray(p.expertise)) {
+          setExpertiseText(p.expertise.map((e) => (typeof e === 'string' ? e : e.name)).filter(Boolean).join(', '));
         } else {
           setExpertiseText('');
         }
       }
+    }
+  };
+
+  useEffect(() => {
+    if (user) {
+      applyProfileData(user, profile);
+      getProfile()
+        .then((data) => {
+          if (data) {
+            applyProfileData(data, data.profile);
+          }
+        })
+        .catch((err) => console.warn('Could not load profile from /api/profile:', err));
     }
   }, [user, profile]);
 

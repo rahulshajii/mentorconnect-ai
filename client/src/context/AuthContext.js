@@ -22,7 +22,12 @@ export const AuthProvider = ({ children }) => {
       try {
         const data = await authService.getMe();
         setUser(data.user);
-        setProfile(data.profile);
+        let userProfile = data.profile;
+        if (!userProfile) {
+          const profData = await profileService.getProfile().catch(() => null);
+          if (profData?.profile) userProfile = profData.profile;
+        }
+        setProfile(userProfile);
       } catch (err) {
         console.error('Persistent token verification failed:', err);
         logout();
@@ -40,7 +45,12 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('token', data.token);
       setToken(data.token);
       setUser(data.user);
-      setProfile(data.profile);
+      let userProfile = data.profile;
+      if (!userProfile) {
+        const profData = await profileService.getProfile().catch(() => null);
+        if (profData?.profile) userProfile = profData.profile;
+      }
+      setProfile(userProfile);
       toast.success('Welcome back to MentorConnect AI!');
       return data;
     } catch (err) {
@@ -56,7 +66,12 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('token', data.token);
       setToken(data.token);
       setUser(data.user);
-      setProfile(data.profile);
+      let userProfile = data.profile;
+      if (!userProfile) {
+        const profData = await profileService.getProfile().catch(() => null);
+        if (profData?.profile) userProfile = profData.profile;
+      }
+      setProfile(userProfile);
       toast.success('Account created successfully!');
       return data;
     } catch (err) {

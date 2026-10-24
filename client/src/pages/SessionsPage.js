@@ -14,7 +14,6 @@ import {
   Card,
   CardContent,
   CircularProgress,
-  Alert,
   IconButton,
   Tooltip,
   Dialog,
@@ -29,7 +28,6 @@ import {
   CheckCircle as ConfirmIcon,
   Cancel as CancelIcon,
   Videocam as VideoIcon,
-  Person as PersonIcon,
   Refresh as RefreshIcon,
   DoneAll as CompleteIcon,
   Block as RejectIcon,
@@ -52,7 +50,6 @@ const SessionsPage = () => {
   // Reject / Cancel Modal state
   const [actionModal, setActionModal] = useState({ open: false, session: null, action: '' });
   const [reason, setReason] = useState('');
-  const [submitting, setSubmitting] = useState(false);
 
   const fetchSessions = async () => {
     setLoading(true);
@@ -76,6 +73,7 @@ const SessionsPage = () => {
     if (user) {
       fetchSessions();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const handleStatusChange = async (sessionId, newStatus, cancellationReason = '') => {

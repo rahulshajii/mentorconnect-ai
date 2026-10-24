@@ -11,8 +11,39 @@ const getUserProfile = async (userId) => {
   let profile = null;
   if (user.role === 'learner') {
     profile = await LearnerProfile.findOne({ userId: user._id });
-  } else {
+    if (!profile) {
+      profile = await LearnerProfile.create({
+        userId: user._id,
+        education: 'Computer Science & Engineering',
+        careerGoal: 'Full-Stack Software Engineer',
+        skills: [
+          { name: 'JavaScript', level: 'Intermediate' },
+          { name: 'React', level: 'Intermediate' },
+        ],
+        profileImage: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user.name)}`,
+        bio: 'Passionate learner aiming to grow technical skills with MentorConnect AI.',
+      });
+    }
+  } else if (user.role === 'mentor') {
     profile = await MentorProfile.findOne({ userId: user._id });
+    if (!profile) {
+      profile = await MentorProfile.create({
+        userId: user._id,
+        experience: 5,
+        sessionPrice: 60,
+        rating: 5.0,
+        bio: 'Senior Technical Specialist and Mentor passionate about guiding developers.',
+        expertise: [{ name: 'Software Architecture', experience: 5 }],
+        availability: ['Monday - Friday: 10:00 AM - 04:00 PM'],
+        profileImage: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user.name)}`,
+      });
+    }
+  } else {
+    profile = {
+      role: 'admin',
+      name: user.name,
+      bio: 'Platform Administrator with complete system management oversight.',
+    };
   }
 
   return {
@@ -229,4 +260,6 @@ module.exports = {
   updateUserProfile,
   getMentorsList,
   getMentorById,
+  sanitizeSkills,
+  sanitizeExpertise,
 };

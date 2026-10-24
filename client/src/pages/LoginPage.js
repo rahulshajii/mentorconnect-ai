@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Container,
@@ -34,8 +34,20 @@ const schema = yup.object().shape({
 });
 
 const LoginPage = () => {
-  const { login } = useAuth();
+  const { user, login } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (user) {
+      const redirectPath =
+        user.role === 'admin'
+          ? '/admin'
+          : user.role === 'mentor'
+          ? '/mentor/dashboard'
+          : '/learner/dashboard';
+      navigate(redirectPath, { replace: true });
+    }
+  }, [user, navigate]);
 
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
@@ -57,7 +69,13 @@ const LoginPage = () => {
     setLoading(true);
     try {
       const res = await login(data.email, data.password);
-      const redirectPath = res.role === 'mentor' ? '/mentor/dashboard' : '/learner/dashboard';
+      const userRole = res.role || res.user?.role;
+      let redirectPath = '/learner/dashboard';
+      if (userRole === 'admin') {
+        redirectPath = '/admin';
+      } else if (userRole === 'mentor') {
+        redirectPath = '/mentor/dashboard';
+      }
       navigate(redirectPath);
     } catch (err) {
       // Handled in AuthContext with toast

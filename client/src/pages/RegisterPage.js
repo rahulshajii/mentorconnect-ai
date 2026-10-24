@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Container,
@@ -46,8 +46,20 @@ const steps = [
 ];
 
 const RegisterPage = () => {
-  const { register } = useAuth();
+  const { user, register } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (user) {
+      const redirectPath =
+        user.role === 'admin'
+          ? '/admin'
+          : user.role === 'mentor'
+          ? '/mentor/dashboard'
+          : '/learner/dashboard';
+      navigate(redirectPath, { replace: true });
+    }
+  }, [user, navigate]);
 
   const [activeStep, setActiveStep] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -164,7 +176,13 @@ const RegisterPage = () => {
       }
 
       const res = await register(payload);
-      const redirectPath = res.role === 'mentor' ? '/mentor/dashboard' : '/learner/dashboard';
+      const userRole = res.role || res.user?.role;
+      let redirectPath = '/learner/dashboard';
+      if (userRole === 'admin') {
+        redirectPath = '/admin';
+      } else if (userRole === 'mentor') {
+        redirectPath = '/mentor/dashboard';
+      }
       navigate(redirectPath);
     } catch (err) {
       setError(err.response?.data?.message || err.message || 'Registration failed. Please check inputs.');

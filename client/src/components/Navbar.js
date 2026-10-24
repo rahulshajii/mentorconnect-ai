@@ -19,6 +19,7 @@ import {
   Popover,
   Typography,
   Stack,
+  CircularProgress,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
@@ -29,6 +30,9 @@ import {
   Notifications as NotificationsIcon,
   CalendarMonth as SessionsIcon,
   DoneAll as MarkReadIcon,
+  School as CourseIcon,
+  WorkspacePremium as CertificateIcon,
+  AdminPanelSettings as AdminIcon,
 } from '@mui/icons-material';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
@@ -36,7 +40,7 @@ import Logo from './Logo';
 import { getNotifications, markAllAsRead, markAsRead } from '../services/notificationService';
 
 const Navbar = () => {
-  const { user, profile, logout } = useAuth();
+  const { user, profile, logout, loading } = useAuth();
   const navigate = useNavigate();
 
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -71,6 +75,7 @@ const Navbar = () => {
       const interval = setInterval(fetchNotifs, 15000); // Poll every 15 seconds
       return () => clearInterval(interval);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const handleMarkAllRead = async () => {
@@ -94,7 +99,11 @@ const Navbar = () => {
       }
     }
     handleNotifClose();
-    navigate('/sessions');
+    if (notif.link) {
+      navigate(notif.link);
+    } else {
+      navigate('/sessions');
+    }
   };
 
   const handleLogout = () => {
@@ -104,6 +113,7 @@ const Navbar = () => {
   };
 
   const navLinks = [
+    { title: 'Courses', path: '/courses' },
     { title: 'Mentors', path: '/recommendations' },
     { title: 'Assessments', path: '/quiz' },
     { title: 'Skill Gap', path: '/skill-gap' },
@@ -146,6 +156,19 @@ const Navbar = () => {
                   </Badge>
                 </IconButton>
 
+                {user.role === 'learner' && (
+                  <Button
+                    component={Link}
+                    to="/my-courses"
+                    variant="text"
+                    color="primary"
+                    startIcon={<CourseIcon />}
+                    sx={{ borderRadius: 6, fontWeight: 700 }}
+                  >
+                    My Courses
+                  </Button>
+                )}
+
                 <Button
                   component={Link}
                   to="/sessions"
@@ -170,15 +193,40 @@ const Navbar = () => {
                   anchorEl={anchorEl}
                   open={Boolean(anchorEl)}
                   onClose={handleMenuClose}
-                  PaperProps={{ sx: { minWidth: 180, borderRadius: 2, mt: 1 } }}
+                  PaperProps={{ sx: { minWidth: 200, borderRadius: 2, mt: 1 } }}
                 >
                   <MenuItem
                     component={Link}
-                    to={user.role === 'mentor' ? '/mentor/dashboard' : '/learner/dashboard'}
+                    to={
+                      user.role === 'admin'
+                        ? '/admin'
+                        : user.role === 'mentor'
+                        ? '/mentor/dashboard'
+                        : '/learner/dashboard'
+                    }
                     onClick={handleMenuClose}
                   >
                     <DashboardIcon fontSize="small" sx={{ mr: 1.5, color: '#0a66c2' }} /> Workspace
                   </MenuItem>
+
+                  {user.role === 'learner' && (
+                    <MenuItem component={Link} to="/my-courses" onClick={handleMenuClose}>
+                      <CourseIcon fontSize="small" sx={{ mr: 1.5, color: '#0a66c2' }} /> My Courses
+                    </MenuItem>
+                  )}
+
+                  {user.role === 'learner' && (
+                    <MenuItem component={Link} to="/certificates" onClick={handleMenuClose}>
+                      <CertificateIcon fontSize="small" sx={{ mr: 1.5, color: '#0a66c2' }} /> My Certificates
+                    </MenuItem>
+                  )}
+
+                  {user.role === 'admin' && (
+                    <MenuItem component={Link} to="/admin" onClick={handleMenuClose}>
+                      <AdminIcon fontSize="small" sx={{ mr: 1.5, color: '#0a66c2' }} /> Admin Portal
+                    </MenuItem>
+                  )}
+
                   <MenuItem component={Link} to="/sessions" onClick={handleMenuClose}>
                     <SessionsIcon fontSize="small" sx={{ mr: 1.5, color: '#0a66c2' }} /> Sessions
                   </MenuItem>
@@ -244,6 +292,10 @@ const Navbar = () => {
                   )}
                 </Popover>
               </>
+            ) : loading && localStorage.getItem('token') ? (
+              <Box sx={{ width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <CircularProgress size={20} />
+              </Box>
             ) : (
               <>
                 <Button
@@ -261,7 +313,7 @@ const Navbar = () => {
                   color="primary"
                   sx={{ borderRadius: 6, fontWeight: 700, px: 2.5 }}
                 >
-                  Join Now
+                  Get Started
                 </Button>
               </>
             )}
@@ -293,6 +345,20 @@ const Navbar = () => {
                 </ListItemButton>
               </ListItem>
             ))}
+            {user?.role === 'learner' && (
+              <>
+                <ListItem disablePadding sx={{ mb: 1 }}>
+                  <ListItemButton component={Link} to="/my-courses" onClick={handleDrawerToggle}>
+                    <ListItemText primary="My Courses" primaryTypographyProps={{ fontWeight: 600, color: '#0a66c2' }} />
+                  </ListItemButton>
+                </ListItem>
+                <ListItem disablePadding sx={{ mb: 1 }}>
+                  <ListItemButton component={Link} to="/certificates" onClick={handleDrawerToggle}>
+                    <ListItemText primary="Certificates" primaryTypographyProps={{ fontWeight: 600, color: '#0a66c2' }} />
+                  </ListItemButton>
+                </ListItem>
+              </>
+            )}
           </List>
 
           <Divider sx={{ my: 2 }} />
@@ -301,7 +367,13 @@ const Navbar = () => {
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
               <Button
                 component={Link}
-                to={user.role === 'mentor' ? '/mentor/dashboard' : '/learner/dashboard'}
+                to={
+                  user.role === 'admin'
+                    ? '/admin'
+                    : user.role === 'mentor'
+                    ? '/mentor/dashboard'
+                    : '/learner/dashboard'
+                }
                 variant="contained"
                 color="primary"
                 fullWidth
@@ -323,13 +395,17 @@ const Navbar = () => {
                 Sign Out
               </Button>
             </Box>
+          ) : loading && localStorage.getItem('token') ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
+              <CircularProgress size={24} />
+            </Box>
           ) : (
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
               <Button component={Link} to="/login" variant="outlined" color="primary" fullWidth onClick={handleDrawerToggle}>
                 Sign In
               </Button>
               <Button component={Link} to="/register" variant="contained" color="primary" fullWidth onClick={handleDrawerToggle}>
-                Join Now
+                Get Started
               </Button>
             </Box>
           )}

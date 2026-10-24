@@ -19,7 +19,6 @@ import {
 import {
   CalendarMonth as CalendarIcon,
   AccessTime as TimeIcon,
-  Topic as TopicIcon,
   EventAvailable as AvailableIcon,
   CheckCircle as CheckIcon,
   Close as CloseIcon,

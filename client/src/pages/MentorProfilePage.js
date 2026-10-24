@@ -13,7 +13,6 @@ import {
   Divider,
   CircularProgress,
   Alert,
-  Rating,
   Card,
   CardContent,
 } from '@mui/material';
@@ -199,6 +198,14 @@ const MentorProfilePage = () => {
               >
                 Senior Industry Mentor ({experienceYears}+ Years Exp.)
               </Typography>
+              {mentorEmail && (
+                <Typography
+                  variant="caption"
+                  sx={{ color: 'rgba(255, 255, 255, 0.8)', display: 'block', mt: 0.2 }}
+                >
+                  {mentorEmail}
+                </Typography>
+              )}
             </Box>
           </Box>
 

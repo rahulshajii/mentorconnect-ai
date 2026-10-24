@@ -1,0 +1,43 @@
+services:
+  # -------------------------------------------------------------
+  # 1. Backend API Web Service (Node.js & Express)
+  # -------------------------------------------------------------
+  - type: web
+    name: mentorconnect-api
+    runtime: node
+    plan: free
+    rootDir: server
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/stats
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: MONGODB_URI
+        sync: false # Set to your free MongoDB Atlas URI in Render Dashboard
+      - key: JWT_SECRET
+        generateValue: true # Render automatically generates a cryptographically secure secret
+      - key: APP_BASE_URL
+        sync: false
+      - key: CLIENT_URL
+        sync: false
+
+  # -------------------------------------------------------------
+  # 2. Frontend React Web App (Static Site)
+  # -------------------------------------------------------------
+  - type: web
+    name: mentorconnect-ui
+    runtime: static
+    plan: free
+    rootDir: client
+    buildCommand: npm install && npm run build
+    staticPublishPath: build
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: REACT_APP_API_URL
+        sync: false # Set to https://mentorconnect-api.onrender.com/api

@@ -7,7 +7,6 @@ import {
   Paper,
   Button,
   Avatar,
-  Chip,
   Stack,
   CircularProgress,
   Divider,

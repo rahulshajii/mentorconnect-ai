@@ -10,8 +10,6 @@ import {
   Chip,
   Stack,
   LinearProgress,
-  Card,
-  CardContent,
   CircularProgress,
   Divider,
 } from '@mui/material';
@@ -19,18 +17,21 @@ import {
   Quiz as QuizIcon,
   CompareArrows as GapIcon,
   People as PeopleIcon,
-  Settings as SettingsIcon,
   CalendarMonth as CalendarIcon,
   Notifications as NotifIcon,
   CheckCircle as CheckIcon,
-  Videocam as VideoIcon,
   ArrowForward as ArrowIcon,
+  School as CourseIcon,
+  WorkspacePremium as CertificateIcon,
+  PlayCircle as PlayIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import DashboardLayout from '../layouts/DashboardLayout';
 import { getLearnerSessions } from '../services/sessionService';
 import { getNotifications } from '../services/notificationService';
+import * as courseService from '../services/courseService';
+import * as certificateService from '../services/certificateService';
 
 const LearnerDashboard = () => {
   const { user, profile } = useAuth();
@@ -38,19 +39,25 @@ const LearnerDashboard = () => {
 
   const [sessions, setSessions] = useState([]);
   const [notifications, setNotifications] = useState([]);
+  const [myCourses, setMyCourses] = useState([]);
+  const [myCertificates, setMyCertificates] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadDashboardData = async () => {
       setLoading(true);
       try {
-        const [sessData, notifData] = await Promise.all([
+        const [sessData, notifData, coursesData, certsData] = await Promise.all([
           getLearnerSessions().catch(() => []),
           getNotifications().catch(() => ({ notifications: [] })),
+          courseService.getMyCourses().catch(() => []),
+          certificateService.getMyCertificates().catch(() => []),
         ]);
 
         setSessions(sessData || []);
         setNotifications(notifData.notifications || []);
+        setMyCourses(coursesData || []);
+        setMyCertificates(certsData || []);
       } catch (err) {
         console.error('Error loading learner dashboard:', err);
       } finally {
@@ -68,7 +75,7 @@ const LearnerDashboard = () => {
   return (
     <DashboardLayout>
       <Container maxWidth="lg" sx={{ pb: 6 }}>
-        {/* Unsplash High-Contrast Hero Banner */}
+        {/* Hero Banner */}
         <Paper
           elevation={4}
           sx={{
@@ -98,35 +105,52 @@ const LearnerDashboard = () => {
               <Avatar
                 src={profile?.profileImage || profile?.profilePicture || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name}`}
                 alt={user?.name}
-                sx={{ width: 80, height: 80, border: '3px solid #ffffff', boxShadow: '0 4px 14px rgba(0,0,0,0.3)' }}
+                sx={{ width: 84, height: 84, border: '3px solid #ffffff' }}
               />
               <Box>
-                <Typography variant="h3" sx={{ fontWeight: 800, textShadow: '0 2px 4px rgba(0,0,0,0.5)', fontSize: { xs: '1.8rem', sm: '2.5rem' } }}>
-                  Welcome back, {user?.name}!
+                <Typography variant="h4" sx={{ fontWeight: 800, mb: 0.5 }}>
+                  Welcome back, {user?.name || 'Learner'}!
                 </Typography>
-                <Typography variant="subtitle1" sx={{ color: 'rgba(255, 255, 255, 0.95)', fontWeight: 500, mt: 0.5 }}>
-                  Target Goal: <strong>{profile?.careerGoal || 'Full-Stack Engineer'}</strong> | Education: <strong>{profile?.education || 'Computer Science'}</strong>
+                <Typography variant="subtitle1" sx={{ opacity: 0.9, mb: 1 }}>
+                  Target Career Goal: <strong>{profile?.careerGoal || 'Full-Stack Software Engineer'}</strong>
                 </Typography>
+                <Stack direction="row" spacing={1}>
+                  <Chip label="Learner Account" size="small" sx={{ bgcolor: '#ffffff', color: '#0a66c2', fontWeight: 700 }} />
+                  <Chip label={`${myCourses.length} Enrolled Courses`} size="small" sx={{ bgcolor: 'rgba(255,255,255,0.2)', color: '#ffffff', fontWeight: 600 }} />
+                  <Chip label={`${myCertificates.length} Certificates`} size="small" sx={{ bgcolor: 'rgba(255,255,255,0.2)', color: '#ffffff', fontWeight: 600 }} />
+                </Stack>
               </Box>
             </Stack>
           </Box>
         </Paper>
 
-        {/* Quick Action Chips */}
+        {/* Quick Hub Navigation Cards */}
         <Grid container spacing={2} sx={{ mb: 4 }}>
-          <Grid item xs={6} sm={3}>
+          <Grid item xs={6} sm={2.4}>
             <Button
               fullWidth
-              variant="contained"
+              variant="outlined"
               color="primary"
-              startIcon={<PeopleIcon />}
-              onClick={() => navigate('/recommendations')}
+              startIcon={<CourseIcon />}
+              onClick={() => navigate('/my-courses')}
               sx={{ py: 1.5, borderRadius: 3, fontWeight: 700 }}
             >
-              AMIE Mentors
+              My Courses ({myCourses.length})
             </Button>
           </Grid>
-          <Grid item xs={6} sm={3}>
+          <Grid item xs={6} sm={2.4}>
+            <Button
+              fullWidth
+              variant="outlined"
+              color="primary"
+              startIcon={<CertificateIcon />}
+              onClick={() => navigate('/certificates')}
+              sx={{ py: 1.5, borderRadius: 3, fontWeight: 700 }}
+            >
+              Certificates ({myCertificates.length})
+            </Button>
+          </Grid>
+          <Grid item xs={6} sm={2.4}>
             <Button
               fullWidth
               variant="outlined"
@@ -135,10 +159,10 @@ const LearnerDashboard = () => {
               onClick={() => navigate('/sessions')}
               sx={{ py: 1.5, borderRadius: 3, fontWeight: 700 }}
             >
-              My Sessions ({upcomingSessions.length})
+              Sessions ({upcomingSessions.length})
             </Button>
           </Grid>
-          <Grid item xs={6} sm={3}>
+          <Grid item xs={6} sm={2.4}>
             <Button
               fullWidth
               variant="outlined"
@@ -150,7 +174,7 @@ const LearnerDashboard = () => {
               Take Quiz
             </Button>
           </Grid>
-          <Grid item xs={6} sm={3}>
+          <Grid item xs={12} sm={2.4}>
             <Button
               fullWidth
               variant="outlined"
@@ -164,13 +188,110 @@ const LearnerDashboard = () => {
           </Grid>
         </Grid>
 
+        {/* Enrolled Courses & Progress Section */}
+        <Paper elevation={0} sx={{ p: 3, borderRadius: 4, border: '1px solid #e2e8f0', bgcolor: '#ffffff', mb: 4 }}>
+          <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
+            <Stack direction="row" spacing={1} alignItems="center">
+              <CourseIcon color="primary" />
+              <Typography variant="h6" sx={{ fontWeight: 800, color: '#0f172a' }}>
+                My Courses & Learning Progress
+              </Typography>
+            </Stack>
+            <Button size="small" endIcon={<ArrowIcon />} onClick={() => navigate('/my-courses')} sx={{ fontWeight: 700 }}>
+              View All Courses
+            </Button>
+          </Stack>
+          <Divider sx={{ mb: 2.5 }} />
+
+          {loading ? (
+            <CircularProgress size={24} sx={{ my: 2 }} />
+          ) : myCourses.length === 0 ? (
+            <Box sx={{ p: 3, textAlign: 'center', bgcolor: '#f8fafc', borderRadius: 3 }}>
+              <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>
+                You have not enrolled in any technical courses yet.
+              </Typography>
+              <Button
+                variant="contained"
+                size="small"
+                startIcon={<PlayIcon />}
+                onClick={() => navigate('/courses')}
+                sx={{ mt: 1.5, borderRadius: 6, fontWeight: 700 }}
+              >
+                Explore Course Catalog
+              </Button>
+            </Box>
+          ) : (
+            <Grid container spacing={2.5}>
+              {myCourses.slice(0, 2).map((item) => {
+                const c = item.courseId;
+                if (!c) return null;
+                const totalLessons = c.curriculum?.length || 1;
+                const completedCount = item.completedLessons?.length || 0;
+
+                return (
+                  <Grid item xs={12} sm={6} key={item._id}>
+                    <Paper
+                      variant="outlined"
+                      sx={{
+                        p: 2.5,
+                        borderRadius: 3,
+                        bgcolor: '#f8fafc',
+                        border: '1px solid #e2e8f0',
+                        height: '100%',
+                        display: 'flex',
+                        flexDirection: 'column',
+                      }}
+                    >
+                      <Stack direction="row" justifyContent="space-between" alignItems="flex-start" sx={{ mb: 1 }}>
+                        <Chip label={c.category} size="small" color="primary" sx={{ fontWeight: 600 }} />
+                        <Chip
+                          label={item.status === 'completed' ? 'Completed' : `${item.progress}%`}
+                          size="small"
+                          color={item.status === 'completed' ? 'success' : 'default'}
+                          sx={{ fontWeight: 700 }}
+                        />
+                      </Stack>
+                      <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1 }}>
+                        {c.title}
+                      </Typography>
+
+                      <Box sx={{ my: 1.5 }}>
+                        <LinearProgress
+                          variant="determinate"
+                          value={item.progress || 0}
+                          sx={{ height: 6, borderRadius: 3, bgcolor: '#e2e8f0' }}
+                        />
+                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+                          {completedCount} of {totalLessons} lessons completed
+                        </Typography>
+                      </Box>
+
+                      <Box sx={{ mt: 'auto', pt: 1 }}>
+                        <Button
+                          fullWidth
+                          variant="contained"
+                          size="small"
+                          onClick={() => navigate(`/courses/${c._id}/learn`)}
+                          sx={{ borderRadius: 2 }}
+                        >
+                          {item.status === 'completed' ? 'Review Lessons' : 'Continue Learning'}
+                        </Button>
+                      </Box>
+                    </Paper>
+                  </Grid>
+                );
+              })}
+            </Grid>
+          )}
+        </Paper>
+
         <Grid container spacing={4}>
           {/* Upcoming Mentoring Sessions Widget */}
           <Grid item xs={12} md={7}>
             <Paper elevation={0} sx={{ p: 3, borderRadius: 4, border: '1px solid #e2e8f0', bgcolor: '#ffffff', mb: 4 }}>
               <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
                 <Typography variant="h6" sx={{ fontWeight: 800, color: '#0f172a' }}>
-                  Upcoming & Active Sessions
+                  Upcoming Mentoring Sessions
                 </Typography>
                 <Button size="small" endIcon={<ArrowIcon />} onClick={() => navigate('/sessions')} sx={{ fontWeight: 700 }}>
                   View All
@@ -199,7 +320,10 @@ const LearnerDashboard = () => {
                 <Stack spacing={2}>
                   {upcomingSessions.slice(0, 3).map((sess) => {
                     const mentorName = sess.mentorId?.name || 'Verified Mentor';
-                    const mentorImg = sess.mentorProfile?.profileImage || sess.mentorId?.profileImage || `https://api.dicebear.com/7.x/avataaars/svg?seed=${mentorName}`;
+                    const mentorImg =
+                      sess.mentorProfile?.profileImage ||
+                      sess.mentorId?.profileImage ||
+                      `https://api.dicebear.com/7.x/avataaars/svg?seed=${mentorName}`;
 
                     return (
                       <Paper key={sess._id} elevation={0} sx={{ p: 2, bgcolor: '#f8fafc', borderRadius: 3, border: '1px solid #e2e8f0' }}>
@@ -221,23 +345,8 @@ const LearnerDashboard = () => {
                               label={sess.status.toUpperCase()}
                               size="small"
                               color={sess.status === 'confirmed' ? 'success' : 'warning'}
-                              sx={{ fontWeight: 800, fontSize: '0.65rem' }}
+                              sx={{ fontWeight: 700 }}
                             />
-                            {sess.status === 'confirmed' && sess.meetingLink && (
-                              <Button
-                                component="a"
-                                href={sess.meetingLink}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                size="small"
-                                variant="contained"
-                                color="success"
-                                startIcon={<VideoIcon />}
-                                sx={{ borderRadius: 6, fontWeight: 700 }}
-                              >
-                                Join
-                              </Button>
-                            )}
                           </Stack>
                         </Stack>
                       </Paper>
@@ -252,18 +361,34 @@ const LearnerDashboard = () => {
               <Typography variant="h6" sx={{ fontWeight: 800, color: '#0f172a', mb: 2 }}>
                 Verified Skill Portfolio
               </Typography>
-              <Stack direction="row" flexWrap="wrap" gap={1}>
-                {profile?.skills?.map((s, idx) => (
-                  <Chip
-                    key={idx}
-                    icon={<CheckIcon sx={{ fontSize: '14px !important' }} />}
-                    label={`${typeof s === 'string' ? s : s.name} (${typeof s === 'string' ? 'Intermediate' : s.level || 'Intermediate'})`}
-                    color="primary"
-                    variant="outlined"
-                    sx={{ fontWeight: 700 }}
-                  />
-                ))}
-              </Stack>
+              {profile?.skills && profile.skills.length > 0 ? (
+                <Stack direction="row" flexWrap="wrap" gap={1}>
+                  {profile.skills.map((s, idx) => (
+                    <Chip
+                      key={idx}
+                      icon={<CheckIcon sx={{ fontSize: '14px !important' }} />}
+                      label={`${typeof s === 'string' ? s : s.name} (${typeof s === 'string' ? 'Intermediate' : s.level || 'Intermediate'})`}
+                      color="primary"
+                      variant="outlined"
+                      sx={{ fontWeight: 700 }}
+                    />
+                  ))}
+                </Stack>
+              ) : (
+                <Box sx={{ p: 2, bgcolor: '#f8fafc', borderRadius: 3, textAlign: 'center' }}>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5, fontWeight: 500 }}>
+                    No skills configured yet. Complete the skill assessment or add your skills in profile settings.
+                  </Typography>
+                  <Stack direction="row" spacing={1.5} justifyContent="center">
+                    <Button size="small" variant="contained" onClick={() => navigate('/quiz')} sx={{ borderRadius: 6, fontWeight: 700 }}>
+                      Take Quiz
+                    </Button>
+                    <Button size="small" variant="outlined" onClick={() => navigate('/profile')} sx={{ borderRadius: 6, fontWeight: 700 }}>
+                      Add Skills
+                    </Button>
+                  </Stack>
+                </Box>
+              )}
             </Paper>
           </Grid>
 
@@ -288,7 +413,17 @@ const LearnerDashboard = () => {
               ) : (
                 <Stack spacing={1.5}>
                   {notifications.slice(0, 4).map((n) => (
-                    <Box key={n._id} sx={{ p: 1.5, bgcolor: n.isRead ? '#f8fafc' : '#f0f9ff', borderRadius: 2, borderLeft: '4px solid #0a66c2' }}>
+                    <Box
+                      key={n._id}
+                      onClick={() => n.link && navigate(n.link)}
+                      sx={{
+                        p: 1.5,
+                        bgcolor: n.isRead ? '#f8fafc' : '#f0f9ff',
+                        borderRadius: 2,
+                        borderLeft: '4px solid #0a66c2',
+                        cursor: n.link ? 'pointer' : 'default',
+                      }}
+                    >
                       <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#0f172a', fontSize: '0.85rem' }}>
                         {n.title}
                       </Typography>

@@ -63,22 +63,36 @@ const DashboardLayout = ({ children }) => {
   };
 
   const isLearner = user?.role === 'learner';
+  const isAdmin = user?.role === 'admin';
 
-  const menuItems = isLearner
-    ? [
-        { text: 'Dashboard', icon: <DashboardIcon />, path: '/learner/dashboard' },
-        { text: 'Skill Assessment', icon: <PsychologyIcon />, path: '/quiz' },
-        { text: 'Skill Gap Analysis', icon: <TrendingUpIcon />, path: '/skill-gap' },
-        { text: 'AMIE Mentors', icon: <AutoAwesomeIcon />, path: '/recommendations' },
-        { text: 'Profile Settings', icon: <PersonIcon />, path: '/profile' },
-      ]
-    : [
-        { text: 'Dashboard', icon: <DashboardIcon />, path: '/mentor/dashboard' },
-        { text: 'Profile Settings', icon: <PersonIcon />, path: '/profile' },
-        { text: 'Students', icon: <PeopleIcon />, path: '/mentor/dashboard' },
-        { text: 'Availability', icon: <AccessTimeIcon />, path: '/mentor/dashboard' },
-        { text: 'Requests', icon: <EventIcon />, path: '/mentor/dashboard' },
-      ];
+  let menuItems = [];
+  if (isAdmin) {
+    menuItems = [
+      { text: 'Admin Portal', icon: <DashboardIcon />, path: '/admin' },
+      { text: 'Course Catalog', icon: <SchoolIcon />, path: '/courses' },
+      { text: 'Profile Settings', icon: <PersonIcon />, path: '/profile' },
+    ];
+  } else if (isLearner) {
+    menuItems = [
+      { text: 'Dashboard', icon: <DashboardIcon />, path: '/learner/dashboard' },
+      { text: 'Course Catalog', icon: <SchoolIcon />, path: '/courses' },
+      { text: 'My Courses', icon: <EventIcon />, path: '/my-courses' },
+      { text: 'Certificates', icon: <AutoAwesomeIcon />, path: '/certificates' },
+      { text: 'Skill Assessment', icon: <PsychologyIcon />, path: '/quiz' },
+      { text: 'Skill Gap Analysis', icon: <TrendingUpIcon />, path: '/skill-gap' },
+      { text: 'AMIE Mentors', icon: <PeopleIcon />, path: '/recommendations' },
+      { text: 'Profile Settings', icon: <PersonIcon />, path: '/profile' },
+    ];
+  } else {
+    menuItems = [
+      { text: 'Dashboard', icon: <DashboardIcon />, path: '/mentor/dashboard' },
+      { text: 'Course Catalog', icon: <SchoolIcon />, path: '/courses' },
+      { text: 'Profile Settings', icon: <PersonIcon />, path: '/profile' },
+      { text: 'Students', icon: <PeopleIcon />, path: '/mentor/dashboard' },
+      { text: 'Availability', icon: <AccessTimeIcon />, path: '/mentor/dashboard' },
+      { text: 'Requests', icon: <EventIcon />, path: '/mentor/dashboard' },
+    ];
+  }
 
   const drawerContent = (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -102,14 +116,14 @@ const DashboardLayout = ({ children }) => {
           </Typography>
           <Chip
             icon={isLearner ? <SchoolIcon sx={{ fontSize: '11px !important' }} /> : <WorkIcon sx={{ fontSize: '11px !important' }} />}
-            label={isLearner ? 'Learner Account' : 'Mentor Account'}
+            label={isLearner ? 'Learner Account' : isAdmin ? 'Administrator' : 'Mentor Account'}
             size="small"
             sx={{
               height: 18,
               fontSize: '0.65rem',
               fontWeight: 700,
-              bgcolor: isLearner ? 'rgba(10, 102, 194, 0.1)' : 'rgba(5, 118, 66, 0.1)',
-              color: isLearner ? '#0a66c2' : '#057642',
+              bgcolor: isLearner ? 'rgba(10, 102, 194, 0.1)' : isAdmin ? 'rgba(124, 58, 237, 0.1)' : 'rgba(5, 118, 66, 0.1)',
+              color: isLearner ? '#0a66c2' : isAdmin ? '#7c3aed' : '#057642',
             }}
           />
         </Box>
