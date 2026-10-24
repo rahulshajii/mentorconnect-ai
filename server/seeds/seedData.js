@@ -405,7 +405,7 @@ const sampleCourses = [
 
 const seedDatabase = async () => {
   try {
-    console.log('--- Checking & Seeding MentorConnect AI Sprint 6 Baseline Data ---');
+    console.log('--- Checking & Seeding MentorConnect AI Baseline Data ---');
 
     // 1. Seed Admin User if not existing
     const adminEmail = 'admin@mentorconnect.ai';

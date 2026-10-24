@@ -1,7 +1,7 @@
-# Sprint 6 API Documentation — MentorConnect AI
+# API Documentation — MentorConnect AI
 
 ## Overview
-Sprint 6 delivers an enterprise-grade learning management and credentialing extension to MentorConnect AI. This includes full course cataloging, demo simulated payments with idempotency controls, server-verified course progress and completion rules, automated PDF certificate generation and cryptographic public verification, audit-logged email notifications, and administrative dashboards.
+MentorConnect AI delivers an enterprise-grade mentoring, learning management, and credentialing platform. This includes full course cataloging, demo simulated payments with idempotency controls, server-verified course progress and completion rules, automated PDF certificate generation and cryptographic public verification, audit-logged email notifications, and administrative dashboards.
 
 All endpoints require JWT authorization (`Bearer <token>`) unless explicitly designated as public.
 

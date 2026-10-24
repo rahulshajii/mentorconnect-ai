@@ -39,7 +39,7 @@ app.use('/api/skill-gap', skillGapRoutes);
 app.use('/api/sessions', sessionRoutes);
 app.use('/api/notifications', notificationRoutes);
 
-// Sprint 6 New Modules: Courses, Demo Payment, Certificates, Email, Admin
+// Course, Payment, Certificate, Email & Admin Modules
 app.use('/api/courses', courseRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/certificates', certificateRoutes);
@@ -82,7 +82,8 @@ app.get('/api/stats', async (req, res) => {
 app.get('/', (req, res) => {
   res.json({
     project: 'MentorConnect AI — AMIE Core API Engine',
-    sprint: 'Sprint 6 — Final Full-Stack Production Release',
+    version: '1.0.0',
+    release: 'Production Release',
     status: 'Active',
     endpoints: [
       '/api/auth',
@@ -114,7 +115,7 @@ async function startServer() {
     console.log(`=================================================`);
     console.log(` MentorConnect AI Backend running on port ${PORT}`);
     console.log(` API Base Endpoint: http://localhost:${PORT}/api`);
-    console.log(` Sprint: Sprint 6 Final Production Architecture`);
+    console.log(` Architecture: MentorConnect AI Production`);
     console.log(`=================================================`);
   });
 

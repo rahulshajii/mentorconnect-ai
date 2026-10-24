@@ -22,10 +22,11 @@ async function cleanDummyData() {
     'learner@example.com',
     'n@gmail.com',
     'aswin@gmail.com',
+    'irinriju@gmail.com',
   ];
 
   // Regex patterns of known dummy/test emails:
-  const dummyEmailPattern = /sprint6test\.ai|test@|t@gmail\.com|test[0-9]@|sarah\.mentor@|alex\.mentor@|rahul\.learner\.new@|rahul\.learner@example\.com/i;
+  const dummyEmailPattern = /mentorconnect-test\.ai|sprint[0-9]*test\.ai|test@|t@gmail\.com|test[0-9]@|sarah\.mentor@|alex\.mentor@|rahul\.learner\.new@|rahul\.learner@example\.com/i;
 
   const allUsers = await db.collection('users').find({}).toArray();
   const dummyUsers = allUsers.filter(u => {

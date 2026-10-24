@@ -14,7 +14,7 @@ const NotFoundPage = () => {
           Page Not Found
         </Typography>
         <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-          The requested route does not exist in MentorConnect AI Sprint 1.
+          The requested page could not be found in MentorConnect AI.
         </Typography>
         <Button component={Link} to="/" variant="contained" color="primary">
           Back to Home

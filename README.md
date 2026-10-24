@@ -100,7 +100,7 @@ mentorconnect-ai/
 │   ├── routes/          # API endpoint declarations
 │   ├── seeds/           # Automatic baseline database seeding
 │   ├── services/        # AMIE Engine, PDF generator, Email service
-│   ├── test_sprint6.js  # Automated 78-point test suite
+│   ├── test.js          # Automated 78-point verification test suite
 │   └── package.json
 ├── docs/                # Comprehensive Architecture & API Documentation
 ├── scripts/             # Startup, seeding, and test execution scripts

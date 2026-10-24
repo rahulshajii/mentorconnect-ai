@@ -1,12 +1,12 @@
-# Sprint 6 Architecture & Technical Design — MentorConnect AI
+# Architecture & Technical Design — MentorConnect AI
 
-## 1. Architectural Philosophy & Isolation
+## 1. Architectural Philosophy & Structure
 
-MentorConnect AI Sprint 6 is designed as an independent, fully encapsulated, production-grade module while retaining seamless compatibility with previous sprint features (AMIE engine, skill-gap quiz assessment, session booking, and notifications).
+MentorConnect AI is designed as a modular, production-grade full-stack architecture combining an explainable AI mentoring inference engine (AMIE), interactive course catalogs, server-verified completions, cryptographic vector PDF certifications, and multi-stage transactional email workflows.
 
 ```
-Sprint_6/
-├── client/              # React 19 SPA with Material-UI 7 & Framer Motion
+mentorconnect-ai/
+├── client/              # React 19 SPA with Material-UI & Framer Motion
 │   ├── src/
 │   │   ├── components/  # Animated checkmarks, navbars, modals
 │   │   ├── pages/       # Catalog, Details, Payment, Learning, Certificates, Admin

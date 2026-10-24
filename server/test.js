@@ -46,7 +46,7 @@ function makeBufferRequest(options) {
 
 async function runTests() {
   console.log('================================================================');
-  console.log('  MentorConnect AI — Sprint 6 Full-Stack Verification Suite');
+  console.log('  MentorConnect AI — Full-Stack Verification Suite');
   console.log('================================================================\n');
 
   let passedTests = 0;
@@ -86,15 +86,15 @@ async function runTests() {
     const rootRes = await makeRequest({ hostname: host, port, path: '/', method: 'GET' });
     assert(rootRes.status === 200, 'GET / returns HTTP 200');
     assert(rootRes.body.project.includes('MentorConnect AI'), 'Root response contains MentorConnect project name');
-    assert(rootRes.body.sprint.includes('Sprint 6'), 'Root response confirms Sprint 6 Release');
+    assert(rootRes.body.release.includes('Production'), 'Root response confirms Production Release');
 
     // -------------------------------------------------------------
     // SUITE 2: AUTHENTICATION & ACCESS CONTROL
     // -------------------------------------------------------------
     console.log('\n--- SUITE 2: Authentication & Access Control ---');
     const timestamp = Date.now();
-    const learnerEmail = `learner.${timestamp}@sprint6test.ai`;
-    const mentorEmail = `mentor.${timestamp}@sprint6test.ai`;
+    const learnerEmail = `learner.${timestamp}@mentorconnect-test.ai`;
+    const mentorEmail = `mentor.${timestamp}@mentorconnect-test.ai`;
 
     // 2.1 Register Learner
     const regLearner = await makeRequest(
@@ -106,7 +106,7 @@ async function runTests() {
         headers: { 'Content-Type': 'application/json' },
       },
       {
-        name: 'Sprint6 Test Learner',
+        name: 'Test Learner',
         email: learnerEmail,
         password: 'password123',
         confirmPassword: 'password123',
@@ -131,7 +131,7 @@ async function runTests() {
         headers: { 'Content-Type': 'application/json' },
       },
       {
-        name: 'Sprint6 Test Mentor',
+        name: 'Test Mentor',
         email: mentorEmail,
         password: 'password123',
         confirmPassword: 'password123',
@@ -427,7 +427,7 @@ async function runTests() {
     });
     assert(verifyRes.status === 200, 'Public certificate verification returns HTTP 200');
     assert(verifyRes.body.isValid === true, 'Certificate confirmed valid and authentic');
-    assert(verifyRes.body.learnerName === 'Sprint6 Test Learner', 'Learner name verified');
+    assert(verifyRes.body.learnerName === 'Test Learner', 'Learner name verified');
     assert(verifyRes.body.courseTitle === samplePaidCourse.title, 'Course title verified');
 
     // 6.3 Reject Invalid Certificate Lookup
@@ -502,7 +502,7 @@ async function runTests() {
     });
     assert(profGet.status === 200, 'GET /api/profile returns HTTP 200');
 
-    // 8.2 Skill Assessment Quiz (Sprint 2 Feature)
+    // 8.2 Skill Assessment Quiz (AMIE Diagnostic Quiz)
     const quizStart = await makeRequest(
       {
         hostname: host,
@@ -541,7 +541,7 @@ async function runTests() {
     assert(quizSubmit.status === 200, 'POST /api/quiz/submit returns HTTP 200');
     assert(quizSubmit.body.result && quizSubmit.body.result.percentage >= 60, 'Quiz score graded');
 
-    // 8.3 Skill Gap Analysis (Sprint 2 Feature)
+    // 8.3 Skill Gap Analysis (Readiness Diagnostics)
     const skillGapRes = await makeRequest({
       hostname: host,
       port,
@@ -552,7 +552,7 @@ async function runTests() {
     assert(skillGapRes.status === 200, 'GET /api/skill-gap returns HTTP 200');
     assert(typeof skillGapRes.body.readinessPercentage === 'number', 'Readiness percentage calculated');
 
-    // 8.4 AMIE Mentor Recommendations (Sprint 2 & 3 Feature)
+    // 8.4 AMIE Mentor Recommendations (Explainable Mentor Matching)
     const amieRes = await makeRequest({
       hostname: host,
       port,
@@ -567,7 +567,7 @@ async function runTests() {
       'AMIE calculated explainable match score'
     );
 
-    // 8.5 Mentoring Session Booking (Sprint 3 Feature)
+    // 8.5 Mentoring Session Booking (Session Scheduling)
     const futureDate = new Date();
     futureDate.setDate(futureDate.getDate() + 7);
     const dateStr = futureDate.toISOString().split('T')[0];

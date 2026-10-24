@@ -25,13 +25,9 @@ client/.env
 client/.env.*
 server/.env
 server/.env.*
-Sprint_6/.env
-Sprint_6/client/.env
-Sprint_6/server/.env
 
 # Temporary Generated Certificate Files (keep folder)
 certificates/*.pdf
-Sprint_6/certificates/*.pdf
 
 # Operating System files
 .DS_Store
