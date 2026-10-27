@@ -211,7 +211,7 @@ const issueCertificate = async ({ learnerId, courseId, enrollmentId, score = 100
     throw new Error('Required records (learner, course, or enrollment) not found to issue certificate.');
   }
 
-  const baseUrl = process.env.APP_BASE_URL || 'http://localhost:3000';
+  const baseUrl = (process.env.APP_BASE_URL || process.env.CLIENT_URL || 'http://localhost:3000').replace(/\/+$/, '');
   const certId = generateCertificateId();
   const verificationUrl = `${baseUrl}/verify-certificate/${certId}`;
 

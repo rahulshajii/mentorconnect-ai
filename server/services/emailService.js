@@ -131,9 +131,11 @@ const dispatchEmail = async ({ recipient, recipientName, eventType, relatedEntit
   return logRecord;
 };
 
+const getFrontendUrl = () => (process.env.APP_BASE_URL || process.env.CLIENT_URL || 'http://localhost:3000').replace(/\/+$/, '');
+
 // 1. Send Enrollment Confirmation
 const sendEnrollmentConfirmation = async ({ learner, course, enrollment }) => {
-  const baseUrl = process.env.APP_BASE_URL || 'http://localhost:3000';
+  const baseUrl = getFrontendUrl();
   const template = getEnrollmentEmail({
     learnerName: learner.name,
     courseName: course.title,
@@ -158,7 +160,7 @@ const sendEnrollmentConfirmation = async ({ learner, course, enrollment }) => {
 
 // 2. Send Demo Payment Receipt
 const sendPaymentReceipt = async ({ learner, course, paymentOrder }) => {
-  const baseUrl = process.env.APP_BASE_URL || 'http://localhost:3000';
+  const baseUrl = getFrontendUrl();
   const template = getPaymentReceiptEmail({
     learnerName: learner.name,
     courseName: course.title,
@@ -189,7 +191,7 @@ const sendPaymentReceipt = async ({ learner, course, paymentOrder }) => {
 
 // 3. Send Course Completion & Certificate Notification
 const sendCourseCompletion = async ({ learner, course, enrollment, certificate }) => {
-  const baseUrl = process.env.APP_BASE_URL || 'http://localhost:3000';
+  const baseUrl = getFrontendUrl();
   const template = getCourseCompletionEmail({
     learnerName: learner.name,
     courseName: course.title,
@@ -218,7 +220,7 @@ const sendCourseCompletion = async ({ learner, course, enrollment, certificate }
 
 // 4. Send Certificate Issued
 const sendCertificateIssued = async ({ learner, course, certificate }) => {
-  const baseUrl = process.env.APP_BASE_URL || 'http://localhost:3000';
+  const baseUrl = getFrontendUrl();
   const template = getCertificateIssuedEmail({
     learnerName: learner.name,
     courseName: course.title,
@@ -245,7 +247,7 @@ const sendCertificateIssued = async ({ learner, course, certificate }) => {
 
 // 5. Send Payment & Course Completion Settlement Notification
 const sendPaymentCompletion = async ({ learner, course, enrollment, paymentOrder, certificate }) => {
-  const baseUrl = process.env.APP_BASE_URL || 'http://localhost:3000';
+  const baseUrl = getFrontendUrl();
   const orderId = paymentOrder?.orderId || `ORD-${new Date().getFullYear()}-${enrollment._id.toString().substring(0, 6).toUpperCase()}`;
   const txnRef = paymentOrder?.transactionReference || `TXN-SETTLED-${enrollment._id.toString().substring(0, 6).toUpperCase()}`;
   const amount = paymentOrder?.amount !== undefined ? paymentOrder.amount : course.price || 0;

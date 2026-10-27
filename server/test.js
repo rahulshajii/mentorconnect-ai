@@ -78,6 +78,14 @@ async function runTests() {
   const port = server.address().port;
   const host = '127.0.0.1';
 
+  // Wait for MongoDB connection to be ready
+  if (mongoose.connection.readyState !== 1) {
+    await new Promise((resolve) => {
+      if (mongoose.connection.readyState === 1) return resolve();
+      mongoose.connection.once('open', resolve);
+    });
+  }
+
   try {
     // -------------------------------------------------------------
     // SUITE 1: API ROOT & HEALTH

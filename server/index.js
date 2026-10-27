@@ -106,11 +106,15 @@ app.get('/', (req, res) => {
 // Global Error Handler
 app.use(errorHandler);
 
-// Start Server
-async function startServer() {
-  await connectDB();
-  await seedDatabase();
+// Connect DB & Initial Seed
+connectDB().then(() => {
+  seedDatabase().catch((err) => {
+    console.warn(`Database seed warning: ${err.message}`);
+  });
+});
 
+// Start Server when run directly
+if (require.main === module) {
   const server = app.listen(PORT, '0.0.0.0', () => {
     console.log(`=================================================`);
     console.log(` MentorConnect AI Backend running on port ${PORT}`);
@@ -123,7 +127,5 @@ async function startServer() {
     console.warn(`Server Notice: ${err.message}`);
   });
 }
-
-startServer();
 
 module.exports = app;
